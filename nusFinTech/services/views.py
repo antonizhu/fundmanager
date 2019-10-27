@@ -7,7 +7,7 @@ from datetime import datetime
 
 def index(request):
     dict = {'insert_here': 'starting point'}
-    return render(request, 'layout.html', context=dict)
+    return render(request, 'index.html', context=dict)
 
 def makeTransaction(request):
     accountTransactionForm = AccountTransactionForm()
