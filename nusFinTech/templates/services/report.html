@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+    {% block body_block %}
+        <canvas class="my-4 w-100 chartjs-render-monitor" id="myChart" width="1076" height="454"
+            style="display: block; width: 1076px; height: 454px;"></canvas>
+        <h2>Transaction History</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Unit</th>
+                        <th>Unit Price</th>
+                        <th>Unit Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for trxn in ledger %}
+                    <tr>
+                        <td>{{trxn.transactionDate|date:"d/m/Y"}}</td>
+                        <td>{{trxn.amount|floatformat:3}}</td>
+                        <td>{{trxn.unit|floatformat:3}}</td>
+                        <td>{{trxn.unitPrice|floatformat:3}}</td>
+                        <td>{{trxn.balance|floatformat:3}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+        
+        <script>
+            /* globals Chart:false, feather:false */
+
+            (function () {
+                'use strict'
+
+                feather.replace()
+
+                // Graphs
+                var ctx = document.getElementById('myChart')
+                // eslint-disable-next-line no-unused-vars
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [
+                        {% for trxn in ledger %}
+                            '{{trxn.transactionDate|date:"d/m/Y"}}',
+                        {% endfor %}
+                        ],
+                        datasets: [{
+                            data: [
+                            {% for trxn in ledger %}
+                            {{trxn.balance|floatformat:3}},
+                            {% endfor %}
+                            ],
+                            lineTension: 0,
+                            backgroundColor: 'transparent',
+                            borderColor: '#007bff',
+                            borderWidth: 4,
+                            pointBackgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: false
+                                }
+                            }]
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                })
+            }())
+
+        </script>
+    {% endblock%}

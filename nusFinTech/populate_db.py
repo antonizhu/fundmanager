@@ -31,10 +31,10 @@ def generateETFHistories(etfs):
     nDays = 20
     startDate = datetime.now().date() - timedelta(days= nDays)
     price = 1.0
-    riskLevel = 0;
+    riskLevel = 0
     for etf in etfs:
-        riskLevel += 1;
-        for aDate in (startDate + timedelta(days= n) for n in range(nDays)):
+        riskLevel += 1
+        for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
             price += riskLevel * random.randint(-10,10)/100
             etfHistory = ETFHistory.objects.get_or_create(etf= etf, date= aDate, price= price)[0]
             etfHistory.save()
@@ -55,15 +55,17 @@ def generateAccounts(etfs):
 
 def generateAccountTransaction(accounts):
     nDays = 20
-    startDate = datetime.now().date() - timedelta(days= nDays)
+    startDate = datetime.now() - timedelta(days= nDays)
     for account in accounts:
-        for aDate in (startDate + timedelta(days= nDays) for n in range(nDays)):
+        for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
+            aDate = aDate.replace(hour= random.randint(9,15))
+
             amount = round((0.1 + random.random()) % 1.0, 2)
             AccountTransaction.objects.get_or_create(account = account, amount = amount, dateTime = aDate)
 
 def populate():
     etfs = generateETFs()
-    #generateETFHistories(etfs)
+    generateETFHistories(etfs)
     accounts = generateAccounts(etfs)
     generateAccountTransaction(accounts)
 

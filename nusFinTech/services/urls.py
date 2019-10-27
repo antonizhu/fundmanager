@@ -6,4 +6,5 @@ app_name = 'services'
 urlpatterns = [
     path('', views.index, name='index'),
     path('makeTransaction', views.makeTransaction, name='makeTransaction'),
+    path('report', views.report, name='report'),
 ]
