@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+    {% load staticfiles %}
+    {% block body_block %}
+    <script src="https://unpkg.com/jquery"></script>
+    <script src="https://surveyjs.azureedge.net/1.1.16/survey.jquery.js"></script>
+    <link href="https://surveyjs.azureedge.net/1.1.16/survey.css" type="text/css" rel="stylesheet"/>
+    <!--link rel="stylesheet" href="./index.css"-->
+    <link href="https://surveyjs.azureedge.net/1.1.16/survey.analytics.css" rel="stylesheet"/>
+
+    <script src="https://cdn.rawgit.com/inexorabletash/polyfill/master/typedarray.js"></script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js"></script>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script src="https://unpkg.com/wordcloud@1.1.0/src/wordcloud2.js"></script>
+
+    <!--script src="https://surveyjs.azureedge.net/1.1.16/survey.analytics.js"></script-->
+    <style>
+        table, th, td {
+          border: 1px solid black;
+        }
+    </style>
+        <div style="margin: 20px;">
+            <h1>Risk Tolerance Survey</h1>
+            <!--a href="https://surveyjs.io/Service/SurveyNPS" style="font-size: 24px">You can see analytics immediately. Just click this link</a>
+
+            <p>
+                or you can pass the survey and see the embedded analytics
+            </p>
+
+            <p>
+                The results of this survey are not collected. In case you want to take a real survey please follow the link:
+                <a href="https://surveyjs.io/published?id=87b306f1-e41c-47c3-99de-1d2cd46c8253" style="font-size: 24px">NPS Survey</a>
+            </p-->
+        </div>
+        <div id="surveyElement"></div>
+        <div id="surveyResult"></div>
+        <div id="json-records"></div>
+
+        <script type="text/javascript" src="{% static 'js/survey.js' %}"></script>
+        
+    {% endblock %}
