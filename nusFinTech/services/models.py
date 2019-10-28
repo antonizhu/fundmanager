@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from django.contrib.auth.models import User
 
 # Create your models here.
 class ETF(models.Model):
@@ -18,13 +19,14 @@ class ETFHistory(models.Model):
         return "{0} {1} {2}".format(self.etf, str(self.date), str(self.price))
 
 class Account(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     id = models.IntegerField(primary_key=True, auto_created=True, editable=False)
     name = models.CharField(max_length=250)
     mobileNo = models.CharField(max_length=10)
-    selectedETF = models.ForeignKey(ETF, on_delete=models.DO_NOTHING)
+    selectedETF = models.ForeignKey(ETF, on_delete=models.DO_NOTHING,blank=True, null=True)
 
     def __str__(self):
-        return "{0} {1} {2}".format(str(self.id), self.name, self.mobileNo)
+        return "{0} {1} {2}".format(self.user.username, self.name, self.mobileNo)
 
 class AccountTransaction(models.Model):
     id = models.IntegerField(primary_key=True, auto_created=True, editable=False)
