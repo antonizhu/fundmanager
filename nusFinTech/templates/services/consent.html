@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+    {% block body_block %}
+    <h1>{{ name }}, you need to give consent first before being able to access this site!</h1>
+    <form method="POST" action="{% url 'user_consent' %}">
+        <input type="radio" id="agree" name="agree" value="True"/><label for="agree">Agree</label>
+        <input type="radio" id="disagree" name="disagree" value="False"/><label for="disagree">Disagree</label>
+        {% csrf_token %}
+
+        <input type="submit" value="Submit"/>
+    </form>
+    {% endblock %}

@@ -6,6 +6,9 @@ from django.contrib.auth import authenticate, login, logout
 from services.forms import AccountTransactionForm, UserForm, AccountForm
 from services.models import Account, AccountTransaction, AccountSummary
 from datetime import datetime
+
+from django.contrib.auth import get_user_model, get_user
+User = get_user_model()
 # Create your views here.
 
 def index(request):
@@ -64,6 +67,21 @@ def register(request):
                             'account_form': account_form, 
                             'registered': registered})
 
+@login_required
+def user_consent(request):
+    print("Username : {0}".format(request.user.username))
+
+    account = Account.objects.get(user=request.user)
+    if request.method == 'POST' and request.POST.get('agree') == 'True':
+        print("Consent value given by user True")
+
+        account.consentGiven = True
+        account.save()
+        return HttpResponseRedirect(reverse('index'))
+    
+    return render(request, 'services/consent.html', {'name': account.name})
+
+        
 def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -74,7 +92,13 @@ def user_login(request):
         if user:
             if user.is_active:
                 login(request, user)
-                return HttpResponseRedirect(reverse('index'))
+                account = Account.objects.get(user=user)
+                print("Consent given {0}".format(account.consentGiven))
+
+                if account.consentGiven == True:
+                    return HttpResponseRedirect(reverse('index'))
+                else:
+                    return render(request, 'services/consent.html', {'name': account.name})
             else:
                 return HttpResponse('Account Not Active')
 

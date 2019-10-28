@@ -24,6 +24,7 @@ class Account(models.Model):
     name = models.CharField(max_length=250)
     mobileNo = models.CharField(max_length=10)
     selectedETF = models.ForeignKey(ETF, on_delete=models.DO_NOTHING,blank=True, null=True)
+    consentGiven = models.BooleanField(default=False)
 
     def __str__(self):
         return "{0} {1} {2}".format(self.user.username, self.name, self.mobileNo)
