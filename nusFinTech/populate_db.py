@@ -41,9 +41,9 @@ def generateETFHistories(etfs):
 
 def generateAccounts(etfs):
     accounts = []
-    accountsDict = [{'name': 'Francois Zhu','mobileNo': '83777384', 'selectedETF': etfs[0]},
-        {'name': 'Katy Parrot','mobileNo': '83666384', 'selectedETF': etfs[1]},
-        {'name': 'Kaley Coco','mobileNo': '83555384', 'selectedETF': etfs[2]},
+    accountsDict = [{'name': 'Jing Xia','mobileNo': '83999123', 'selectedETF': etfs[0]},
+        #{'name': 'Katy Parrot','mobileNo': '83666384', 'selectedETF': etfs[1]},
+        #{'name': 'Kaley Coco','mobileNo': '83555384', 'selectedETF': etfs[2]},
     ]
     for accountDict in accountsDict:
         account = Account.objects.get_or_create(name=accountDict['name'], mobileNo= accountDict['mobileNo'], selectedETF = accountDict['selectedETF'])[0]
@@ -65,7 +65,7 @@ def generateAccountTransaction(accounts):
 
 def populate():
     etfs = generateETFs()
-    generateETFHistories(etfs)
+    #generateETFHistories(etfs)
     accounts = generateAccounts(etfs)
     generateAccountTransaction(accounts)
 
