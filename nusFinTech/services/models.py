@@ -54,7 +54,7 @@ class TransactionPrice():
         if (accountTransaction.type == AccountTransaction.TYPEWITHDRAW or
             accountTransaction.type == AccountTransaction.TYPELOSS):
             self.amount *= -1
-            
+
         self.balance = previousBalance + self.amount
 
     def add(self, accountTransaction):
@@ -63,7 +63,7 @@ class TransactionPrice():
             accountTransaction.type == AccountTransaction.TYPELOSS):
             addAmount *= -1
 
-        self.balance -= addAmount
+        self.balance += addAmount
 
 
 
