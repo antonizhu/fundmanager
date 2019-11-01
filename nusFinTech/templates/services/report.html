@@ -10,6 +10,7 @@
                         <th>Date</th>
                         <th>Amount</th>
                         <th>Balance</th>
+                        <th>Profit</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -18,6 +19,7 @@
                         <td>{{trxn.transactionDate|date:"d/m/Y"}}</td>
                         <td>{{trxn.amount|floatformat:3}}</td>
                         <td>{{trxn.balance|floatformat:3}}</td>
+                        <td>{{trxn.profit|floatformat:3}}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

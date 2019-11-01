@@ -51,9 +51,16 @@ class TransactionPrice():
     def __init__(self, accountTransaction, previousBalance):
         self.transactionDate = accountTransaction.dateTime.date()
         self.amount = accountTransaction.amount
+        self.profit = 0
         if (accountTransaction.type == AccountTransaction.TYPEWITHDRAW or
             accountTransaction.type == AccountTransaction.TYPELOSS):
             self.amount *= -1
+
+        if accountTransaction.type == AccountTransaction.TYPELOSS:
+            self.profit = -1.0 * accountTransaction.amount
+        elif accountTransaction.type == AccountTransaction.TYPEPROFIT:
+            self.profit = accountTransaction.amount
+        
 
         self.balance = previousBalance + self.amount
 
@@ -63,16 +70,21 @@ class TransactionPrice():
             accountTransaction.type == AccountTransaction.TYPELOSS):
             addAmount *= -1
 
+        if accountTransaction.type == AccountTransaction.TYPELOSS:
+            self.profit = -1.0 * accountTransaction.amount
+        elif accountTransaction.type == AccountTransaction.TYPEPROFIT:
+            self.profit = accountTransaction.amount
+
         self.balance += addAmount
 
 
 
     def __str__(self):
-        return "{0} {1} {2}".format(self.transactionDate.strftime("%Y/%m/%d %H:%M:%S"), str(self.amount), str(self.balance))
+        return "{0} {1} {2} {3}".format(self.transactionDate.strftime("%Y/%m/%d %H:%M:%S"), str(self.amount), str(self.balance), str(self.profit))
 
 class AccountSummary():
     def __init__(self, account):
-        transactions = AccountTransaction.objects.filter(account = account).order_by('dateTime')
+        transactions = AccountTransaction.objects.filter(account=account).order_by('dateTime')
         
         self.transactionLedger = []
         balance = 0
