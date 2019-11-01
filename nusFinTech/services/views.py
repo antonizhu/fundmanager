@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -20,7 +21,7 @@ def makeTransaction(request):
     accountTransactionForm = AccountTransactionForm()
 
     if request.method == 'POST':
-        accountTxn = AccountTransaction(account = Account.objects.get(pk=1), dateTime = datetime.now()) #for now set all transaction to first user in db
+        accountTxn = AccountTransaction(account = Account.objects.get(user=request.user), dateTime=datetime.now(tz=timezone.utc))
         accountTransactionForm = AccountTransactionForm(request.POST, instance= accountTxn)
         if accountTransactionForm.is_valid():
 
@@ -30,11 +31,35 @@ def makeTransaction(request):
         return index(request) #in the next step, may be redirect to report directly?
         
     return render(request, 'services/makeTransaction.html', {'form': accountTransactionForm})
+    
+@login_required
+def withdraw(request):
+    account = Account.objects.get(user=request.user)
+    account_summary = AccountSummary(account=account)
+    account_transaction_form = AccountTransactionForm()
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        print ("Amount submitted: {0}".format(str(amount)))
+        account_txn = AccountTransaction(account=account, dateTime=datetime.now(tz=timezone.utc), type=AccountTransaction.TYPEWITHDRAW)
+        account_transaction_form = AccountTransactionForm(request.POST, instance=account_txn)
+        print("Something")
+        if account_transaction_form.is_valid():
+            print("Allow to transact? {0} {1} - {2}".format(str(account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance), str(account_transaction_form.cleaned_data['amount']), str(account_summary.transactionLedger[-1].balance)))
+        
+            if account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance:
+                print("Withdrawal amount: {0} {1}".format(str(account_transaction_form.cleaned_data['amount']), account_txn.type))
+                account_transaction_form.save()
+                account_summary = AccountSummary(account=account)
+            else:
+                print("Withdrawal over limit!")
+
+    return render(request, 'services/withdraw.html', { 'form': account_transaction_form,
+                                                       'name': account.name,
+                                                       'balance':  account_summary.transactionLedger[-1].balance})
 
 @login_required
 def report(request):
-    accountSummary = AccountSummary(account = Account.objects.get(pk=1))
-
+    accountSummary = AccountSummary(account=Account.objects.get(user=request.user))
     return render(request, 'services/report.html', {'ledger': accountSummary.transactionLedger})
 
 def register(request):
