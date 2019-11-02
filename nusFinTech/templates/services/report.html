@@ -8,7 +8,6 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Amount</th>
                         <th>Balance</th>
                         <th>Profit</th>
                     </tr>
@@ -17,9 +16,14 @@
                 {% for trxn in ledger %}
                     <tr>
                         <td>{{trxn.transactionDate|date:"d/m/Y"}}</td>
-                        <td>{{trxn.amount|floatformat:3}}</td>
                         <td>{{trxn.balance|floatformat:3}}</td>
-                        <td>{{trxn.profit|floatformat:3}}</td>
+                        {% if trxn.profit > 0 %}
+                        <td class="text-success">
+                        {% else %}
+                        <td class="text-danger">
+                        {% endif %}
+                            {{trxn.profit|floatformat:3}}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

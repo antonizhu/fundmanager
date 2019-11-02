@@ -11,6 +11,7 @@ from faker import Faker
 from datetime import datetime
 from datetime import timedelta
 fakegen = Faker()
+nDays = 20
 
 def generateETFs():
 
@@ -28,15 +29,15 @@ def generateETFs():
     return etfList
 
 def generateETFHistories(etfs):
-    nDays = 20
+
     startDate = datetime.now().date() - timedelta(days= nDays)
-    price = 1.0
+
     riskLevel = 0
     for etf in etfs:
         riskLevel += 1
         for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
-            price += riskLevel * random.randint(-10,10)/100
-            etfHistory = ETFHistory.objects.get_or_create(etf= etf, date= aDate, price= price)[0]
+            delta = riskLevel * random.randint(-10,10)/1000
+            etfHistory = ETFHistory.objects.get_or_create(etf= etf, date= aDate, delta= delta)[0]
             etfHistory.save()
 
 def generateAccounts(etfs):
@@ -54,7 +55,7 @@ def generateAccounts(etfs):
     return accounts
 
 def generateAccountTransaction(accounts):
-    nDays = 20
+
     startDate = datetime.now() - timedelta(days= nDays)
     for account in accounts:
         for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
@@ -63,11 +64,38 @@ def generateAccountTransaction(accounts):
             amount = round((0.1 + random.random()) % 1.0, 2)
             AccountTransaction.objects.get_or_create(account = account, amount = amount, dateTime = aDate)
 
+def generateProfitAccountTransaction(accounts):
+    for account in accounts:
+        balance = 0
+        #get accountTransaction order by date
+        #iterate trxn
+        # balance += trxn.amount
+        # find etf delta for the date
+        account_transaction = account.transactions.order_by('dateTime')
+        history = account.selectedETF.history.order_by('date')
+        balance = 0
+        for txn in account_transaction:
+            balance += txn.amount
+            etf_delta = {h for h in history if h.date == txn.dateTime.date()}
+            
+            amount = balance * etf_delta.pop().delta
+            transaction_type = AccountTransaction.TYPEPROFIT
+            if amount < 0 : 
+                transaction_type = AccountTransaction.TYPELOSS
+                amount = abs(amount)
+            date = txn.dateTime
+            date = date.replace(hour=23, minute=59, second=59)
+            print('{0} {1} {2} {3}'.format(str(balance), str(amount), str(transaction_type), str(date)))
+            AccountTransaction.objects.get_or_create(account=account, amount=amount, dateTime=date, type=transaction_type)
+
+
 def populate():
     etfs = generateETFs()
-    #generateETFHistories(etfs)
     accounts = generateAccounts(etfs)
-    generateAccountTransaction(accounts)
+    #generateAccountTransaction(accounts)#generateETFHistories(etfs)
+    #ats = AccountTransaction.objects.all().order_by('dateTime')
+    generateProfitAccountTransaction(accounts)
+
 
 if __name__ == '__main__':
     print('populating records...')

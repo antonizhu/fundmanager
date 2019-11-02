@@ -11,7 +11,7 @@ class ETF(models.Model):
         return "{0} {1}".format(str(self.id), self.name)
 
 class ETFHistory(models.Model):
-    etf = models.ForeignKey(ETF, on_delete=models.CASCADE)
+    etf = models.ForeignKey(ETF, on_delete=models.CASCADE, related_name='history')
     date = models.DateField()
     delta = models.FloatField()
 
@@ -39,7 +39,7 @@ class AccountTransaction(models.Model):
     TYPE_CHOICES = [(TYPEDEPOSIT, 'Deposit'), (TYPEWITHDRAW, 'Withdraw'), (TYPEPROFIT, 'Profit'), (TYPELOSS, 'Loss')]
 
     id = models.IntegerField(primary_key=True, auto_created=True, editable=False)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transactions')
     amount = models.FloatField()
     dateTime = models.DateTimeField(auto_now_add=False)
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPEDEPOSIT)
