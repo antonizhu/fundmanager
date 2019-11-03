@@ -40,7 +40,7 @@ def generateETFHistories(etfs):
     for etf in etfs:
         riskLevel += 1
         for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
-            delta = riskLevel * random.randint(-10,10)/1000
+            delta = riskLevel * random.randint(20,40)/10000
             etfHistory = ETFHistory.objects.get_or_create(etf= etf, date= aDate, delta= delta)[0]
             etfHistory.save()
 
@@ -122,9 +122,10 @@ def generateMonthlySummary(accounts):
 def populate():
     etfs = generateETFs()
     accounts = generateAccounts(etfs)
-    #generateAccountTransaction(accounts)#generateETFHistories(etfs)
-    #generateProfitAccountTransaction(accounts)
-    generateMonthlySummary(accounts)
+    generateETFHistories(etfs)
+    generateAccountTransaction(accounts)
+    generateProfitAccountTransaction(accounts)
+    #generateMonthlySummary(accounts)
 
 
 if __name__ == '__main__':
