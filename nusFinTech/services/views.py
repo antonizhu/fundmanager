@@ -58,6 +58,18 @@ def withdraw(request):
                                                        'balance':  account_summary.transactionLedger[-1].balance})
 
 @login_required
+def timeSeriesAUM(request):
+    account = Account.objects.get(user=request.user)
+    startPrice = 1.0
+    history = []
+    etfHistory = account.selectedETF.history.order_by('date')
+    for etfH in etfHistory:
+        history.append({'date': etfH.date, 'price': (1+etfH.delta) * startPrice})
+
+    return render(request, 'services/timeSeriesAUM.html', {'history': history})
+
+
+@login_required
 def transactionHistory(request):
     account = Account.objects.get(user=request.user)
     return render(request, 'services/transactionHistory.html', {'transactions': account.transactions.order_by('dateTime')})
