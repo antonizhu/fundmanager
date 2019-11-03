@@ -1,0 +1,42 @@
+Project start:
+
+Installation:
+
+Install python (3.7)
+Install anaconda (python package manager): https://www.anaconda.com/distribution/
+
+
+Virtual environment creation:
+1. From windows, find "Anaconda Prompt"
+2. Type : cd <your project dir>
+3. Type	: conda  create --name nusDjangoEnv
+4. Type : conda activate nusDjangoEnv
+5. Type	: conda install django
+6. Type : django-admin startproject nusFinTech
+8. Type : cd nusFinTech
+8. Type : python manage.py startapp services
+7. Type : python manage.py runserver
+
+Generate the db model:
+8. Type : python manage.py migrate
+9. Type : python manage.py makemigrations
+10. Type again : python manage.py migrate
+
+Create db admin user: (user/pw: admin/admin)
+11. Type: pyhon manage.py createsuperuser
+12. to login and manage records go to: http://localhost:8000/admin 
+
+Populate DB with dummy/fake data:
+13. Type: pip install fake
+
+Create user account for login:
+14. Type: pip install bcrypt
+15. Type: pip install django[argon2]
+
+List virtual environment:
+1. From windows, find "Anaconda Prompt"
+2. Open command prompt and type: conda info --envs
+
+
+Format database:
+Type : python manage.py flush
