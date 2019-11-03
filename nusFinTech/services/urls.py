@@ -8,10 +8,11 @@ app_name = 'services'
 urlpatterns = [
     path('', views.index, name='index'),
     path('makeTransaction', views.makeTransaction, name='makeTransaction'),
+    path('withdraw', views.withdraw, name='withdraw'),
+    path('transactionHistory', views.transactionHistory, name='transactionHistory'),
     path('report', views.report, name='report'),
     path('monthlyReport', views.monthlyReport, name='monthlyReport'),
     path('yearlyReport', views.yearlyReport, name='yearlyReport'),
-    path('withdraw', views.withdraw, name='withdraw'),
 ]
 
 def updateETFHistory(nForward=0):

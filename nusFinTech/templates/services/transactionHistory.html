@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+    {% block body_block %}
+        <h2>Transaction History</h2>
+        <div class="float-left w-50">
+        {% for trxn in transactions reversed %}
+        <div class="container border-bottom border-dark">
+            <div class="row justify-content-md-left">
+                <div class="col col-lg-2 font-weight-bold">Amount</div>
+                {% if trxn.amount > 0 %}
+                <div class="col col-lg-2 font-weight-bold text-success">
+                {% else %}
+                <div class="col col-lg-2 font-weight-bold text-danger">
+                {% endif %}
+                    {{trxn.amount|floatformat:3}}
+                </div>
+            </div>
+            <div class="row justify-content-md-left">
+                <div class="col col-lg-2 font-weight-light">{{trxn.dateTime|date:"d/m/Y"}}</div>
+                <div class="col col-lg-2 font-weight-light">{{trxn.get_type_display}}</div>    
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+        
+    {% endblock%}

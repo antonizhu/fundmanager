@@ -58,6 +58,11 @@ def withdraw(request):
                                                        'balance':  account_summary.transactionLedger[-1].balance})
 
 @login_required
+def transactionHistory(request):
+    account = Account.objects.get(user=request.user)
+    return render(request, 'services/transactionHistory.html', {'transactions': account.transactions.order_by('dateTime')})
+
+@login_required
 def report(request):
     accountSummary = AccountSummary(account=Account.objects.get(user=request.user))
     return render(request, 'services/report.html', {'ledger': accountSummary.transactionLedger})
