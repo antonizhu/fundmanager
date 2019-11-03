@@ -6,10 +6,14 @@ django.setup()
 
 
 import random
-from services.models import ETF, ETFHistory, Account, AccountTransaction
+from services.models import ETF, ETFHistory, Account, AccountTransaction, MonthlySummary
 from faker import Faker
 from datetime import datetime
 from datetime import timedelta
+from django.utils import timezone
+import calendar
+from dateutil.relativedelta import relativedelta
+
 fakegen = Faker()
 nDays = 20
 
@@ -88,13 +92,39 @@ def generateProfitAccountTransaction(accounts):
             print('{0} {1} {2} {3}'.format(str(balance), str(amount), str(transaction_type), str(date)))
             AccountTransaction.objects.get_or_create(account=account, amount=amount, dateTime=date, type=transaction_type)
 
+nMonths = 24
+def generateMonthlySummary(accounts):
+    #account 1 low, account 2 medium, account 3 high
+    
+    risk_level = 0
+    for account in accounts:
+        risk_level += 1
 
+        start_date = datetime.now(tz=timezone.utc).date()
+        end_month_day = calendar.monthrange(start_date.year, start_date.month)[1]
+        start_date = start_date.replace(day=end_month_day)
+        start_date = start_date - relativedelta(months=nMonths)
+
+        profit_rate = random.randint(1, 10)/100*risk_level
+        closing_balance = random.randint(100, 150)
+        profit = closing_balance * profit_rate
+        closing_balance = closing_balance + profit
+
+        for n in range(0, nMonths):
+            date = start_date + relativedelta(months=n)
+            MonthlySummary.objects.get_or_create(account=account, closing_balance = closing_balance, profit=profit, month_year_date=date)
+            
+            profit_rate = random.randint(1, 7)/100*risk_level
+            profit = closing_balance * profit_rate
+            closing_balance += profit
+        
+    
 def populate():
     etfs = generateETFs()
     accounts = generateAccounts(etfs)
     #generateAccountTransaction(accounts)#generateETFHistories(etfs)
-    #ats = AccountTransaction.objects.all().order_by('dateTime')
-    generateProfitAccountTransaction(accounts)
+    #generateProfitAccountTransaction(accounts)
+    generateMonthlySummary(accounts)
 
 
 if __name__ == '__main__':

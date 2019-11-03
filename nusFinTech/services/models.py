@@ -47,6 +47,16 @@ class AccountTransaction(models.Model):
     def __str__(self):
         return "{0} {1} {2} {3} {4}".format(str(self.id), self.account, str(self.amount), self.type, str(self.dateTime))
 
+class MonthlySummary(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='monthly_summary')
+    closing_balance = models.FloatField()
+    profit = models.FloatField()
+    month_year_date = models.DateTimeField()
+    
+    def __str__(self):
+        return "{0} {1} {2} {3}".format(self.account.name, str(self.closing_balance), str(self.profit), self.month_year_date.strftime("%m/%Y"))
+
+
 class TransactionPrice():
     def __init__(self, accountTransaction, previousBalance):
         self.transactionDate = accountTransaction.dateTime.date()

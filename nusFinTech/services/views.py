@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from services.forms import AccountTransactionForm, UserForm, AccountForm
-from services.models import Account, AccountTransaction, AccountSummary
+from services.models import Account, AccountTransaction, AccountSummary, MonthlySummary
 from datetime import datetime
 
 from django.contrib.auth import get_user_model, get_user
@@ -61,6 +61,14 @@ def withdraw(request):
 def report(request):
     accountSummary = AccountSummary(account=Account.objects.get(user=request.user))
     return render(request, 'services/report.html', {'ledger': accountSummary.transactionLedger})
+
+@login_required
+def monthlyReport(request):
+    account = Account.objects.get(user=request.user)
+    monthly_summaries = account.monthly_summary.order_by('month_year_date')
+    for monthly in monthly_summaries:
+        print(monthly)
+    return render(request, 'services/monthlyReport.html', {'ledger' : monthly_summaries})
 
 def register(request):
     registered = False
