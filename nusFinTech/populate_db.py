@@ -6,7 +6,7 @@ django.setup()
 
 
 import random
-from services.models import ETF, ETFHistory, Account, AccountTransaction, MonthlySummary
+from services.models import ETF, ETFHistory, Account, AccountTransaction, MonthlySummary, YearlySummary
 from faker import Faker
 from datetime import datetime
 from datetime import timedelta
@@ -117,15 +117,39 @@ def generateMonthlySummary(accounts):
             profit_rate = random.randint(1, 7)/100*risk_level
             profit = closing_balance * profit_rate
             closing_balance += profit
+
+def generateYearlySummary(accounts):
+    for account in accounts:
+        monthly_summaries = account.monthly_summary.order_by('month_year_date')
         
+        year = monthly_summaries[0].month_year_date.year
+        
+        profit = 0
+        closing_balance = 0
+
+        for monthly_summary in monthly_summaries:
+            if year == monthly_summary.month_year_date.year:
+                profit += monthly_summary.profit
+                closing_balance = monthly_summary.closing_balance
+                month_year_date = monthly_summary.month_year_date
+            else:
+                YearlySummary.objects.get_or_create(account=account, closing_balance=closing_balance, profit=profit, year_date=month_year_date)
+                year = monthly_summary.month_year_date.year
+                profit = monthly_summary.profit
+                closing_balance = monthly_summary.closing_balance
+                month_year_date = monthly_summary.month_year_date
+                
+        YearlySummary.objects.get_or_create(account=account, closing_balance=closing_balance, profit=profit, year_date=month_year_date)
+                
     
 def populate():
     etfs = generateETFs()
     accounts = generateAccounts(etfs)
-    generateETFHistories(etfs)
-    generateAccountTransaction(accounts)
-    generateProfitAccountTransaction(accounts)
+    #generateETFHistories(etfs)
+    #generateAccountTransaction(accounts)
+    #generateProfitAccountTransaction(accounts)
     #generateMonthlySummary(accounts)
+    generateYearlySummary(accounts)
 
 
 if __name__ == '__main__':

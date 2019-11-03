@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+    {% block body_block %}
+        <canvas class="my-4 w-100 chartjs-render-monitor" id="myChart" width="1076" height="454"
+            style="display: block; width: 1076px; height: 454px;"></canvas>
+
+        <h2>Yearly Accumulation</h2>
+        <div class="float-left w-50">
+        {% for trxn in ledger reversed %}
+        <div class="container border-bottom border-dark">
+            <div class="row justify-content-md-left">
+                <div class="col col-lg-2 font-weight-bold">Profit</div>
+                {% if trxn.profit > 0 %}
+                <div class="col col-lg-2 font-weight-bold text-success">
+                {% else %}
+                <div class="col col-lg-2 font-weight-bold text-danger">
+                {% endif %}
+                    {{trxn.profit|floatformat:3}}
+                </div>
+            </div>
+            <div class="row justify-content-md-left">
+                <div class="col col-lg-2 font-weight-light">{{trxn.year_date|date:"m/Y"}}</div>
+                <div class="col col-lg-2 font-weight-light">{{trxn.closing_balance|floatformat:3}}</div>    
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+        
+        <script>
+            /* globals Chart:false, feather:false */
+
+            (function () {
+                'use strict'
+
+                feather.replace()
+
+                // Graphs
+                var ctx = document.getElementById('myChart')
+                // eslint-disable-next-line no-unused-vars
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [
+                        {% for trxn in ledger %}
+                            '{{trxn.year_date|date:"m/Y"}}',
+                        {% endfor %}
+                        ],
+                        datasets: [{
+                            label: 'Balance',
+                            backgroundColor: '#36a2eb',
+                            stack: 'Stack 0',
+                            data: [
+                            {% for trxn in ledger %}
+                            {{trxn.closing_balance|floatformat:3}},
+                            {% endfor %}
+                            ]
+                        },
+                        {
+                            label: 'Profit',
+                            backgroundColor: '#ff6384',
+                            stack: 'Stack 0',
+                            data: [    
+                            {% for trxn in ledger %}
+                            {{trxn.profit|floatformat:3}},
+                            {% endfor %}
+                            ]
+                        }
+                        ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Accumulation'
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: 'false'
+                        },
+                        responsives: true,
+                        scales: {
+                            xAxes: [{
+                                stacked: true
+                            }],
+                            yAxes: [{
+                                stacked: true
+                            }]
+                        }
+                    }
+                })
+            }())
+
+        </script>
+    {% endblock%}

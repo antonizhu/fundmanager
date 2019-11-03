@@ -70,6 +70,15 @@ def monthlyReport(request):
         print(monthly)
     return render(request, 'services/monthlyReport.html', {'ledger' : monthly_summaries})
 
+@login_required
+def yearlyReport(request):
+    account = Account.objects.get(user=request.user)
+    yearly_summaries = account.yearly_summary.order_by('year_date')
+    for yearly in yearly_summaries:
+        print(yearly)
+    return render(request, 'services/yearlyReport.html', {'ledger' : yearly_summaries})
+
+
 def register(request):
     registered = False
 
