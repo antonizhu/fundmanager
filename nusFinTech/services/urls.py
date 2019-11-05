@@ -7,6 +7,8 @@ import random
 app_name = 'services'
 urlpatterns = [
     path('', views.index, name='index'),
+	path('portfolio_composition', views.portfolioComposition, name='portfolio_composition'),
+	path('account_setting', views.accountSetting, name='account_setting'),
     path('makeTransaction', views.makeTransaction, name='makeTransaction'),
     path('withdraw', views.withdraw, name='withdraw'),
     path('timeSeriesAUM', views.timeSeriesAUM, name='timeSeriesAUM'),

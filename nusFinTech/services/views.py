@@ -17,6 +17,13 @@ def index(request):
     return render(request, 'index.html', context=dict)
 
 @login_required
+def portfolioComposition(request):
+    return render(request, 'services/portfolioComposition.html')
+
+@login_required
+def accountSetting(request):
+    return render(request, 'services/accountSetting.html')
+@login_required
 def makeTransaction(request):
     accountTransactionForm = AccountTransactionForm()
     postMessage = ''

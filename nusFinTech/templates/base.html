@@ -68,13 +68,14 @@
 <body>
   <nav class="navbar navbar-dark fixed-top bg-danger flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{% url 'index'%}">DBS SaVest</a>
+	{% if user.is_authenticated %}
+	<p class="navbar-text text-white">Welcome, {{ name }}</p>
     <ul class="navbar-nav px-3">
       <li class="nav-item text-nowrap">
-        {% if user.is_authenticated %}
         <a class="nav-link text-white" href="{% url 'user_logout' %}">Sign out</a>
-        {% endif %}
       </li>
     </ul>
+	{% endif %}
   </nav>
 
   <div class="container-fluid">
@@ -84,7 +85,7 @@
             <ul class="nav flex-column">
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                  <a class="nav-link active" href="#">
+                  <a class="nav-link active" href="{% url 'index' %}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                       class="feather feather-home">
@@ -95,19 +96,7 @@
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      class="feather feather-layers">
-                      <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                      <polyline points="2 17 12 22 22 17"></polyline>
-                      <polyline points="2 12 12 17 22 12"></polyline>
-                    </svg>
-                    AUM
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">
+                  <a class="nav-link" href="{% url 'services:portfolio_composition' %}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                       class="feather feather-layers">
@@ -118,30 +107,7 @@
                     Portfolio Composition
                   </a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'services:timeSeriesAUM' %}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      class="feather feather-layers">
-                      <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                      <polyline points="2 17 12 22 22 17"></polyline>
-                      <polyline points="2 12 12 17 22 12"></polyline>
-                    </svg>
-                    Time-series AUM
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'services:transactionHistory' %}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      class="feather feather-layers">
-                      <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                      <polyline points="2 17 12 22 22 17"></polyline>
-                      <polyline points="2 12 12 17 22 12"></polyline>
-                    </svg>
-                    Transaction History
-                  </a>
-                </li>
+                
                   {% else %}
                   <li class="nav-item">
                       <a class="nav-link" href="{% url 'user_login' %}">
@@ -163,7 +129,7 @@
             </h6>
           <ul class="nav flex-column mb-2">
             <li class="nav-item">
-              <a class="nav-link" href="#">
+              <a class="nav-link" href="{% url 'services:account_setting' %}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                   class="feather feather-users">
@@ -205,6 +171,18 @@
             <span>Return History</span>
           </h6>
           <ul class="nav flex-column mb-2">
+			<li class="nav-item">
+			  <a class="nav-link" href="{% url 'services:transactionHistory' %}">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+				  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+				  class="feather feather-layers">
+				  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+				  <polyline points="2 17 12 22 22 17"></polyline>
+				  <polyline points="2 12 12 17 22 12"></polyline>
+				</svg>
+				Transaction History
+			  </a>
+		</li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'services:report' %}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
