@@ -26,13 +26,13 @@ def makeTransaction(request):
         accountTxn = AccountTransaction(account = Account.objects.get(user=request.user), dateTime=datetime.now(tz=timezone.utc))
         accountTransactionForm = AccountTransactionForm(request.POST, instance= accountTxn)
         transactionPerformed = True
-        if accountTransactionForm.is_valid():
+        if accountTransactionForm.is_valid() and accountTransactionForm.cleaned_data['amount'] > 0:
 
             print("Amount: "+ str(accountTransactionForm.cleaned_data['amount']))
             accountTransactionForm.save()
-            postMessage = 'Successfully deposit ${0} to your account!'.format(str(accountTransactionForm.cleaned_data['amount']))
+            postMessage = 'Successfully deposit ${0:.3f} to your account!'.format(accountTransactionForm.cleaned_data['amount'])
         else:
-            postMessage = 'Fails to deposit ${0} to your account!'.format(str(accountTransactionForm.cleaned_data['amount']))
+            postMessage = 'Fails to deposit ${0:.3f} to your account!'.format(accountTransactionForm.cleaned_data['amount'])
 		
     return render(request, 'services/makeTransaction.html', {'form': accountTransactionForm,
                                                              'transactionPerformed':transactionPerformed,
@@ -53,17 +53,19 @@ def withdraw(request):
         account_txn = AccountTransaction(account=account, dateTime=datetime.now(tz=timezone.utc), type=AccountTransaction.TYPEWITHDRAW)
         account_transaction_form = AccountTransactionForm(request.POST, instance=account_txn)
         
-        if account_transaction_form.is_valid():
+        if account_transaction_form.is_valid() and account_transaction_form.cleaned_data['amount'] > 0:
             print("Allow to transact? {0} {1} - {2}".format(str(account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance), str(account_transaction_form.cleaned_data['amount']), str(account_summary.transactionLedger[-1].balance)))
         
             if account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance:
                 print("Withdrawal amount: {0} {1}".format(str(account_transaction_form.cleaned_data['amount']), account_txn.type))
                 account_transaction_form.save()
                 account_summary = AccountSummary(account=account)
-                postMessage = 'Successfully withdraw ${0} from your account'.format(str(account_transaction_form.cleaned_data['amount']))
+                postMessage = 'Successfully withdraw ${0:.3f} from your account'.format(account_transaction_form.cleaned_data['amount'])
             else:
                 print("Withdrawal over limit!")
-                postMessage = 'Withdrawal over limit! You only have ${}'.format(str(account_summary.transactionLedger[-1].balance))
+                postMessage = 'Withdrawal over limit! You only have ${0:.3f}'.format(account_summary.transactionLedger[-1].balance)
+        else:
+            postMessage = 'Fail to withdraw ${0:.3f} from your account!'.format(account_transaction_form.cleaned_data['amount'])
 
     return render(request, 'services/withdraw.html', { 'form': account_transaction_form,
                                                        'name': account.name,
