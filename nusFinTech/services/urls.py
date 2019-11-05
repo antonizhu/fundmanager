@@ -29,15 +29,15 @@ def updateETFHistory(nForward=0):
         print(etf_history)
         today_date = datetime.now().date()
         day_diff = today_date - etf_history.date
-        print('{0} days to patch ETF History!'.format(day_diff.days))
-        if day_diff.days > 0:
-            for aDate in (etf_history.date + timedelta(days=n) for n in range(1, day_diff.days+1+nForward)):
+        print('{0} days since last patch to ETF History!'.format(day_diff.days))
+        if day_diff.days > 1:
+            for aDate in (etf_history.date + timedelta(days=n) for n in range(1, day_diff.days+nForward)):
                 delta = riskLevel * random.randint(20, 40)/10000
                 ETFHistory.objects.get_or_create(etf=etf, date=aDate, delta=delta)
 
 
 def updateTransactionProfit(nForward=0):
-    print('updating Transaction Profit history from last update to today...')
+    print('updating Transaction Profit history from last update to yesterday...')
     accounts = Account.objects.all()
     for account in accounts:
         etfHistory = account.selectedETF.history.order_by('date')
@@ -46,9 +46,9 @@ def updateTransactionProfit(nForward=0):
         today_date = datetime.today().date()
 
         day_diff = today_date - lastProfitDate
-        print('{0} days to patch Account Profits'.format(str(day_diff.days)))
-        if day_diff.days > 0:
-            for aDate in (lastProfitDate + timedelta(days=n) for n in range(1, day_diff.days+1+nForward)):
+        print('{0} days since last patch to Account Profits'.format(str(day_diff.days)))
+        if day_diff.days > 1:
+            for aDate in (lastProfitDate + timedelta(days=n) for n in range(1, day_diff.days+nForward)):
                 account_summary = AccountSummary(account)
                 that_day_txns = list(filter(lambda txn: txn.transactionDate == aDate, account_summary.transactionLedger))
                 that_day_etf_history = list(filter(lambda etfh: etfh.date == aDate, etfHistory))
@@ -66,6 +66,6 @@ def updateTransactionProfit(nForward=0):
                 type = AccountTransaction.TYPERETURN if profit > 0 else AccountTransaction.TYPELOSS
                 AccountTransaction.objects.get_or_create(account=account, amount=profit, dateTime=aDate, type=type)
 
-#updateETFHistory()
+updateETFHistory()
 
-#updateTransactionProfit()
+updateTransactionProfit()
