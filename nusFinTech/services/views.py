@@ -12,15 +12,20 @@ from django.contrib.auth import get_user_model, get_user
 User = get_user_model()
 # Create your views here.
 
+@login_required(login_url='user_login')
 def index(request):
-    dict = {'insert_here': 'starting point'}
-    return render(request, 'index.html', context=dict)
+    account = Account.objects.get(user=request.user)
+    account_summary = AccountSummary(account=account)
+    last_trxn = account_summary.transactionLedger[-1]
+    print('Balance: {0}, Return: {1}'.format(str(last_trxn.balance), str(last_trxn.profit)))
+    return render(request, 'index.html', {'balance': last_trxn.balance,
+                                          'return': last_trxn.profit})
 
-@login_required
+@login_required(login_url='user_login')
 def portfolioComposition(request):
     return render(request, 'services/portfolioComposition.html')
 
-@login_required
+@login_required(login_url='user_login')
 def accountSetting(request):
     account = Account.objects.get(user=request.user)
     account_etf_form = AccountETFForm()
@@ -44,7 +49,7 @@ def accountSetting(request):
                                                             'success_message': success_message,
                                                             'error_message': error_message})
 
-@login_required
+@login_required(login_url='user_login')
 def makeTransaction(request):
     
     postMessage = ''
@@ -71,7 +76,7 @@ def makeTransaction(request):
                                                              'transactionPerformed':transactionPerformed,
                                                              'postMessage':postMessage})
     
-@login_required
+@login_required(login_url='user_login')
 def withdraw(request):
     account = Account.objects.get(user=request.user)
     account_summary = AccountSummary(account=account)
@@ -111,7 +116,7 @@ def withdraw(request):
                                                        'transactionPerformed': transactionPerformed,
                                                        'postMessage': postMessage})
 
-@login_required
+@login_required(login_url='user_login')
 def timeSeriesAUM(request):
     account = Account.objects.get(user=request.user)
     startPrice = 1.0
@@ -123,17 +128,17 @@ def timeSeriesAUM(request):
     return render(request, 'services/timeSeriesAUM.html', {'history': history})
 
 
-@login_required
+@login_required(login_url='user_login')
 def transactionHistory(request):
     account = Account.objects.get(user=request.user)
     return render(request, 'services/transactionHistory.html', {'transactions': account.transactions.order_by('dateTime')})
 
-@login_required
+@login_required(login_url='user_login')
 def report(request):
     accountSummary = AccountSummary(account=Account.objects.get(user=request.user))
     return render(request, 'services/report.html', {'ledger': accountSummary.transactionLedger})
 
-@login_required
+@login_required(login_url='user_login')
 def monthlyReport(request):
     account = Account.objects.get(user=request.user)
     monthly_summaries = account.monthly_summary.order_by('month_year_date')
@@ -141,7 +146,7 @@ def monthlyReport(request):
         print(monthly)
     return render(request, 'services/monthlyReport.html', {'ledger' : monthly_summaries})
 
-@login_required
+@login_required(login_url='user_login')
 def yearlyReport(request):
     account = Account.objects.get(user=request.user)
     yearly_summaries = account.yearly_summary.order_by('year_date')
@@ -180,7 +185,7 @@ def register(request):
                             'account_form': account_form, 
                             'registered': registered})
 
-@login_required
+@login_required(login_url='user_login')
 def user_consent(request):
     print("Username : {0}".format(request.user.username))
 
@@ -221,7 +226,7 @@ def user_login(request):
     else:
         return render(request, 'login.html')
 
-@login_required
+@login_required(login_url='user_login')
 def user_logout(request):
     logout(request)
     return render(request, 'login.html')
