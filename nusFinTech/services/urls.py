@@ -39,7 +39,7 @@ def updateTransactionProfit(nForward=0):
     accounts = Account.objects.all()
     for account in accounts:
         etfHistory = account.selectedETF.history.order_by('date')
-        profit_txns = list(filter(lambda txn: txn.type == AccountTransaction.TYPEPROFIT or txn.type == AccountTransaction.TYPELOSS, account.transactions.order_by('dateTime')))
+        profit_txns = list(filter(lambda txn: txn.type == AccountTransaction.TYPERETURN or txn.type == AccountTransaction.TYPELOSS, account.transactions.order_by('dateTime')))
         lastProfitDate = profit_txns[-1].dateTime.date()
         today_date = datetime.today().date()
 
@@ -61,9 +61,9 @@ def updateTransactionProfit(nForward=0):
                 
                 profit = balance * delta
 
-                type = AccountTransaction.TYPEPROFIT if profit > 0 else AccountTransaction.TYPELOSS
+                type = AccountTransaction.TYPERETURN if profit > 0 else AccountTransaction.TYPELOSS
                 AccountTransaction.objects.get_or_create(account=account, amount=profit, dateTime=aDate, type=type)
 
-updateETFHistory()
+#updateETFHistory()
 
-updateTransactionProfit()
+#updateTransactionProfit()

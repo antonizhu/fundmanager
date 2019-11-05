@@ -33,10 +33,10 @@ class AccountTransaction(models.Model):
 
     TYPEDEPOSIT = 'D'
     TYPEWITHDRAW = 'W'
-    TYPEPROFIT = 'P'
+    TYPERETURN = 'R'
     TYPELOSS = 'L'
 
-    TYPE_CHOICES = [(TYPEDEPOSIT, 'Deposit'), (TYPEWITHDRAW, 'Withdraw'), (TYPEPROFIT, 'Profit'), (TYPELOSS, 'Loss')]
+    TYPE_CHOICES = [(TYPEDEPOSIT, 'Deposit'), (TYPEWITHDRAW, 'Withdraw'), (TYPERETURN, 'Return'), (TYPELOSS, 'Loss')]
 
     id = models.IntegerField(primary_key=True, auto_created=True, editable=False)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transactions')
@@ -76,7 +76,7 @@ class TransactionPrice():
 
         if accountTransaction.type == AccountTransaction.TYPELOSS:
             self.profit = -1.0 * accountTransaction.amount
-        elif accountTransaction.type == AccountTransaction.TYPEPROFIT:
+        elif accountTransaction.type == AccountTransaction.TYPERETURN:
             self.profit = accountTransaction.amount
         
 
@@ -90,7 +90,7 @@ class TransactionPrice():
 
         if accountTransaction.type == AccountTransaction.TYPELOSS:
             self.profit = -1.0 * accountTransaction.amount
-        elif accountTransaction.type == AccountTransaction.TYPEPROFIT:
+        elif accountTransaction.type == AccountTransaction.TYPERETURN:
             self.profit = accountTransaction.amount
 
         self.balance += addAmount

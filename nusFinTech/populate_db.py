@@ -83,7 +83,7 @@ def generateProfitAccountTransaction(accounts):
             etf_delta = {h for h in history if h.date == txn.dateTime.date()}
             
             amount = balance * etf_delta.pop().delta
-            transaction_type = AccountTransaction.TYPEPROFIT
+            transaction_type = AccountTransaction.TYPERETURN
             if amount < 0 : 
                 transaction_type = AccountTransaction.TYPELOSS
                 amount = abs(amount)
@@ -145,10 +145,10 @@ def generateYearlySummary(accounts):
 def populate():
     etfs = generateETFs()
     accounts = generateAccounts(etfs)
-    #generateETFHistories(etfs)
-    #generateAccountTransaction(accounts)
-    #generateProfitAccountTransaction(accounts)
-    #generateMonthlySummary(accounts)
+    generateETFHistories(etfs)
+    generateAccountTransaction(accounts)
+    generateProfitAccountTransaction(accounts)
+    generateMonthlySummary(accounts)
     generateYearlySummary(accounts)
 
 
