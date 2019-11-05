@@ -19,30 +19,40 @@ def index(request):
 @login_required
 def makeTransaction(request):
     accountTransactionForm = AccountTransactionForm()
+    postMessage = ''
+    transactionPerformed = False
 
     if request.method == 'POST':
         accountTxn = AccountTransaction(account = Account.objects.get(user=request.user), dateTime=datetime.now(tz=timezone.utc))
         accountTransactionForm = AccountTransactionForm(request.POST, instance= accountTxn)
+        transactionPerformed = True
         if accountTransactionForm.is_valid():
 
             print("Amount: "+ str(accountTransactionForm.cleaned_data['amount']))
             accountTransactionForm.save()
-        
-        return index(request) #in the next step, may be redirect to report directly?
-        
-    return render(request, 'services/makeTransaction.html', {'form': accountTransactionForm})
+            postMessage = 'Successfully deposit ${0} to your account!'.format(str(accountTransactionForm.cleaned_data['amount']))
+        else:
+            postMessage = 'Fails to deposit ${0} to your account!'.format(str(accountTransactionForm.cleaned_data['amount']))
+		
+    return render(request, 'services/makeTransaction.html', {'form': accountTransactionForm,
+                                                             'transactionPerformed':transactionPerformed,
+                                                             'postMessage':postMessage})
     
 @login_required
 def withdraw(request):
     account = Account.objects.get(user=request.user)
     account_summary = AccountSummary(account=account)
     account_transaction_form = AccountTransactionForm()
+	
+    postMessage = ''
+    transactionPerformed = False
     if request.method == 'POST':
         amount = request.POST.get('amount')
+        transactionPerformed = True
         print ("Amount submitted: {0}".format(str(amount)))
         account_txn = AccountTransaction(account=account, dateTime=datetime.now(tz=timezone.utc), type=AccountTransaction.TYPEWITHDRAW)
         account_transaction_form = AccountTransactionForm(request.POST, instance=account_txn)
-        print("Something")
+        
         if account_transaction_form.is_valid():
             print("Allow to transact? {0} {1} - {2}".format(str(account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance), str(account_transaction_form.cleaned_data['amount']), str(account_summary.transactionLedger[-1].balance)))
         
@@ -50,12 +60,16 @@ def withdraw(request):
                 print("Withdrawal amount: {0} {1}".format(str(account_transaction_form.cleaned_data['amount']), account_txn.type))
                 account_transaction_form.save()
                 account_summary = AccountSummary(account=account)
+                postMessage = 'Successfully withdraw ${0} from your account'.format(str(account_transaction_form.cleaned_data['amount']))
             else:
                 print("Withdrawal over limit!")
+                postMessage = 'Withdrawal over limit! You only have ${}'.format(str(account_summary.transactionLedger[-1].balance))
 
     return render(request, 'services/withdraw.html', { 'form': account_transaction_form,
                                                        'name': account.name,
-                                                       'balance':  account_summary.transactionLedger[-1].balance})
+                                                       'balance':  account_summary.transactionLedger[-1].balance,
+                                                       'transactionPerformed': transactionPerformed,
+                                                       'postMessage': postMessage})
 
 @login_required
 def timeSeriesAUM(request):
