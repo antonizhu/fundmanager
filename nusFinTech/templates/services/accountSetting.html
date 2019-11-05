@@ -1,4 +1,41 @@
 {% extends "base.html" %}
     {% block body_block %}
-    <h1>This page will allow user to set their investment option: Low, Medium, High risk</h1>
-	{% endblock %}
+    {% if transaction_performed %}
+	        <div class="toast" data-delay="2000" style="position: absolute; top: 35%; right: 0;">
+              <div class="toast-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                {% if success_message|length > 0 %}
+                <strong class="mr-auto text-success">Success</strong>
+                {% else %}
+                <strong class="mr-auto text-danger">Failure</strong>
+                {% endif%}
+                <small>just now</small>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="toast-body">
+                
+                {% if success_message|length > 0 %}
+                {{ success_message }}
+                {% else %}
+                {{ error_message }}
+                {% endif %}
+              </div>
+            </div>
+	{% endif %}
+    <h3>Your current investment option is: <strong>{{ account.selectedETF.name }}</strong></h3>
+    <form method="POST">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <input type="submit" name="submit" value="Submit"/> 
+    </form>
+    {% endblock %}
+
+    {% block js_block %}
+    {% if transaction_performed %}
+    <script>
+    $('.toast').toast('show')
+    </script>
+    {% endif %}
+    {% endblock %}

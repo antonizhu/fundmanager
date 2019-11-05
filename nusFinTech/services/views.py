@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from services.forms import AccountTransactionForm, UserForm, AccountForm
+from services.forms import AccountTransactionForm, UserForm, AccountForm, AccountETFForm
 from services.models import Account, AccountTransaction, AccountSummary, MonthlySummary
 from datetime import datetime
 
@@ -22,12 +22,34 @@ def portfolioComposition(request):
 
 @login_required
 def accountSetting(request):
-    return render(request, 'services/accountSetting.html')
+    account = Account.objects.get(user=request.user)
+    account_etf_form = AccountETFForm()
+    success_message = ''
+    error_message = ''
+    transaction_performed = False
+    if request.method == 'POST':
+        transaction_performed = True
+        account_etf_form = AccountETFForm(request.POST, instance=account)
+        if account_etf_form.is_valid() and account_etf_form.cleaned_data['selectedETF'] is not None:
+            print("received post with new value of selected etf: {0}".format(str(account_etf_form.cleaned_data['selectedETF'])))
+            success_message = 'Investment is adjusted to {0}'.format(str(account_etf_form.cleaned_data['selectedETF']))
+            account_etf_form.save()
+        else:
+            print("Fail to update new risk {0}".format(str(account_etf_form.cleaned_data['selectedETF'])))
+            error_message = 'Failed to adjust investement risk to {0}!'.format(str(account_etf_form.cleaned_data['selectedETF']))
+
+    return render(request, 'services/accountSetting.html', {'form': account_etf_form,
+                                                            'account': account,
+                                                            'transaction_performed': transaction_performed,
+                                                            'success_message': success_message,
+                                                            'error_message': error_message})
+
 @login_required
 def makeTransaction(request):
-    accountTransactionForm = AccountTransactionForm()
+    
     postMessage = ''
     transactionPerformed = False
+    noError = True
 
     if request.method == 'POST':
         accountTxn = AccountTransaction(account = Account.objects.get(user=request.user), dateTime=datetime.now(tz=timezone.utc))
@@ -37,11 +59,15 @@ def makeTransaction(request):
 
             print("Amount: "+ str(accountTransactionForm.cleaned_data['amount']))
             accountTransactionForm.save()
-            postMessage = 'Successfully deposit ${0:.3f} to your account!'.format(accountTransactionForm.cleaned_data['amount'])
+            postMessage = 'Successfully deposit ${0:.2f} to your account!'.format(accountTransactionForm.cleaned_data['amount'])
         else:
-            postMessage = 'Fails to deposit ${0:.3f} to your account!'.format(accountTransactionForm.cleaned_data['amount'])
-		
+            noError = False
+            postMessage = 'Fails to deposit ${0:.2f} to your account!'.format(accountTransactionForm.cleaned_data['amount'])
+	
+    accountTransactionForm = AccountTransactionForm()
+
     return render(request, 'services/makeTransaction.html', {'form': accountTransactionForm,
+                                                             'noError': noError,
                                                              'transactionPerformed':transactionPerformed,
                                                              'postMessage':postMessage})
     
@@ -49,10 +75,10 @@ def makeTransaction(request):
 def withdraw(request):
     account = Account.objects.get(user=request.user)
     account_summary = AccountSummary(account=account)
-    account_transaction_form = AccountTransactionForm()
-	
+    
     postMessage = ''
     transactionPerformed = False
+    noError = True
     if request.method == 'POST':
         amount = request.POST.get('amount')
         transactionPerformed = True
@@ -67,16 +93,21 @@ def withdraw(request):
                 print("Withdrawal amount: {0} {1}".format(str(account_transaction_form.cleaned_data['amount']), account_txn.type))
                 account_transaction_form.save()
                 account_summary = AccountSummary(account=account)
-                postMessage = 'Successfully withdraw ${0:.3f} from your account'.format(account_transaction_form.cleaned_data['amount'])
+                postMessage = 'Successfully withdraw ${0:.2f} from your account'.format(account_transaction_form.cleaned_data['amount'])
             else:
                 print("Withdrawal over limit!")
-                postMessage = 'Withdrawal over limit! You only have ${0:.3f}'.format(account_summary.transactionLedger[-1].balance)
+                noError = False
+                postMessage = 'Withdrawal over limit! You only have ${0:.2f}'.format(account_summary.transactionLedger[-1].balance)
         else:
-            postMessage = 'Fail to withdraw ${0:.3f} from your account!'.format(account_transaction_form.cleaned_data['amount'])
+            noError = False
+            postMessage = 'Fail to withdraw ${0:.2f} from your account!'.format(account_transaction_form.cleaned_data['amount'])
+    
+    account_transaction_form = AccountTransactionForm()
 
     return render(request, 'services/withdraw.html', { 'form': account_transaction_form,
                                                        'name': account.name,
                                                        'balance':  account_summary.transactionLedger[-1].balance,
+                                                       'noError': noError,
                                                        'transactionPerformed': transactionPerformed,
                                                        'postMessage': postMessage})
 
