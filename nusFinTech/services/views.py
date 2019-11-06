@@ -14,9 +14,14 @@ User = get_user_model()
 
 @login_required(login_url='user_login')
 def index(request):
+    today = datetime.now(tz=timezone.utc).date()
     account = Account.objects.get(user=request.user)
     account_summary = AccountSummary(account=account)
     last_trxn = account_summary.transactionLedger[-1]
+    if last_trxn.transactionDate  == today and len(account_summary.transactionLedger) > 1:
+        #use the previous transaction's profit
+        print('using previous days profit because today\'s profit is not yet calculated')
+        last_trxn.profit = account_summary.transactionLedger[-2].profit
     print('Balance: {0}, Return: {1}'.format(str(last_trxn.balance), str(last_trxn.profit)))
     return render(request, 'index.html', {'balance': last_trxn.balance,
                                           'return': last_trxn.profit})
