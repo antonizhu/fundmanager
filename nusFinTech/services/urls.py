@@ -77,4 +77,4 @@ def updateTransactionProfit(nForward=0):
 
 updateETFHistory()
 
-#updateTransactionProfit()
+updateTransactionProfit()
