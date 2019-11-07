@@ -14,9 +14,13 @@ class ETFHistory(models.Model):
     etf = models.ForeignKey(ETF, on_delete=models.CASCADE, related_name='history')
     date = models.DateField()
     delta = models.FloatField()
+    equity_pct = models.FloatField()
+    fixed_income_pct = models.FloatField()
+    commodities_pct = models.FloatField()
+    cash_pct = models.FloatField()
 
     def __str__(self):
-        return "{0} {1} {2}".format(self.etf, str(self.date), str(self.delta))
+        return "{0} {1} {2:0.3f} Eq: {3:0.3f} Fi: {4:0.3f} Co: {5:0.3f} Ca: {6:0.3f}".format(self.etf.name, str(self.date), self.delta, self.equity_pct, self.fixed_income_pct, self.commodities_pct, self.cash_pct)
 
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

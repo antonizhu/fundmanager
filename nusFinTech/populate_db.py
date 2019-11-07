@@ -35,14 +35,22 @@ def generateETFs():
 def generateETFHistories(etfs):
 
     startDate = datetime.now().date() - timedelta(days= nDays)
-
+    aum = [ {'eq': 0.2, 'fi': 0.2, 'co': 0.2, 'ca': 0.4}, 
+            {'eq': 0.3, 'fi': 0.2, 'co': 0.3, 'ca': 0.2}, 
+            {'eq': 0.4, 'fi': 0.1, 'co': 0.4, 'ca': 0.1}]
     riskLevel = 0
     for etf in etfs:
-        riskLevel += 1
+        
         for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
-            delta = riskLevel * random.randint(20,40)/10000
-            etfHistory = ETFHistory.objects.get_or_create(etf= etf, date= aDate, delta= delta)[0]
-            etfHistory.save()
+            delta = (riskLevel + 1) * random.randint(20,40)/10000
+            eq_pct = aum[riskLevel]['eq'] + random.randint(-40, 40)/10000
+            fi_pct = aum[riskLevel]['fi'] + random.randint(-40, 40)/10000
+            co_pct = aum[riskLevel]['co'] + random.randint(-40, 40)/10000
+            ca_pct = 1 - (eq_pct + fi_pct + co_pct)
+            ETFHistory.objects.get_or_create(etf=etf, date=aDate, delta=delta, equity_pct = eq_pct, 
+                                                fixed_income_pct = fi_pct, commodities_pct = co_pct, cash_pct = ca_pct)
+            
+        riskLevel += 1
 
 def generateAccounts(etfs):
     accounts = []
@@ -144,12 +152,12 @@ def generateYearlySummary(accounts):
     
 def populate():
     etfs = generateETFs()
-    accounts = generateAccounts(etfs)
+    #accounts = generateAccounts(etfs)
     generateETFHistories(etfs)
-    generateAccountTransaction(accounts)
-    generateProfitAccountTransaction(accounts)
-    generateMonthlySummary(accounts)
-    generateYearlySummary(accounts)
+    #generateAccountTransaction(accounts)
+    #generateProfitAccountTransaction(accounts)
+    #generateMonthlySummary(accounts)
+    #generateYearlySummary(accounts)
 
 
 if __name__ == '__main__':

@@ -21,10 +21,12 @@ urlpatterns = [
 def updateETFHistory(nForward=0):
     print('updating etf history from last update to today...')
     etfs = ETF.objects.all()
-
+    aum = [ {'eq': 0.2, 'fi': 0.2, 'co': 0.2, 'ca': 0.4}, 
+            {'eq': 0.3, 'fi': 0.2, 'co': 0.3, 'ca': 0.2}, 
+            {'eq': 0.4, 'fi': 0.1, 'co': 0.4, 'ca': 0.1}]
     riskLevel = 0
+
     for etf in etfs:
-        riskLevel += 1
         etf_history = etf.history.order_by('-date').first()
         print(etf_history)
         today_date = datetime.now().date()
@@ -32,8 +34,15 @@ def updateETFHistory(nForward=0):
         print('{0} days since last patch to ETF History!'.format(day_diff.days))
         if day_diff.days > 1:
             for aDate in (etf_history.date + timedelta(days=n) for n in range(1, day_diff.days+nForward)):
-                delta = riskLevel * random.randint(20, 40)/10000
-                ETFHistory.objects.get_or_create(etf=etf, date=aDate, delta=delta)
+                delta = (riskLevel + 1) * random.randint(20, 40)/10000
+                eq_pct = aum[riskLevel]['eq'] + random.randint(-40, 40)/10000
+                fi_pct = aum[riskLevel]['fi'] + random.randint(-40, 40)/10000
+                co_pct = aum[riskLevel]['co'] + random.randint(-40, 40)/10000
+                ca_pct = 1 - (eq_pct + fi_pct + co_pct)
+                ETFHistory.objects.get_or_create(etf=etf, date=aDate, delta=delta, equity_pct = eq_pct, 
+                                                fixed_income_pct = fi_pct, commodities_pct = co_pct, cash_pct = ca_pct)
+        riskLevel += 1
+        
 
 
 def updateTransactionProfit(nForward=0):
@@ -68,4 +77,4 @@ def updateTransactionProfit(nForward=0):
 
 updateETFHistory()
 
-updateTransactionProfit()
+#updateTransactionProfit()
