@@ -14,6 +14,7 @@ User = get_user_model()
 
 @login_required(login_url='user_login')
 def index(request):
+    today = datetime.now(tz=timezone.utc).date()
     account = Account.objects.get(user=request.user)
     return render(request, 'index.html', {'etf_history': account.selectedETF.history.order_by('date').last()})
 
