@@ -15,11 +15,7 @@ User = get_user_model()
 @login_required(login_url='user_login')
 def index(request):
     account = Account.objects.get(user=request.user)
-    account_summary = AccountSummary(account=account)
-    last_trxn = account_summary.transactionLedger[-1]
-    print('Balance: {0}, Return: {1}'.format(str(last_trxn.balance), str(last_trxn.profit)))
-    return render(request, 'index.html', {'balance': last_trxn.balance,
-                                          'return': last_trxn.profit})
+    return render(request, 'index.html', {'etf_history': account.selectedETF.history.order_by('date').last()})
 
 @login_required(login_url='user_login')
 def portfolioComposition(request):

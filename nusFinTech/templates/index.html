@@ -27,10 +27,10 @@
                 var myChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Balance', 'Return'],
+                        labels: ['Equity', 'Fixed Income', 'Commodity', 'Cash'],
                         datasets: [{
-							data: [{{ balance }}, {{ return }}],
-							backgroundColor: ['#36a2eb', '#ff6384'],
+							data: [{{ etf_history.equity_pct }}, {{ etf_history.fixed_income_pct }}, {{ etf_history.commodities_pct }}, {{ etf_history.cash_pct }}],
+							backgroundColor: [ '#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
                     	}
 						],
 						
@@ -43,7 +43,7 @@
 						},
 						title: {
 							display: true,
-							text: 'Your performance today'
+							text: 'Latest AUM Composition ({{ etf_history.date|date:"d/m/Y"}})'
 						},
 						animation: {
 							animateScale: true,
