@@ -18,9 +18,10 @@ from django.db.models.functions import TruncMonth, TruncYear
 
 import calendar
 from dateutil.relativedelta import relativedelta
+import csv
 
 fakegen = Faker()
-nDays = 50
+nDays = 365
 
 def generateETFs():
 
@@ -57,26 +58,50 @@ def generateETFHistories(etfs):
             
         riskLevel += 1
 
+def generateETFHistoriesFromFile(etf, csv_reader):
+    previous_aum_sum = 0
+    first_record = True 
+    startDate = datetime.now().date() - timedelta(days=nDays)
+    index = 0
+    for row in csv_reader:
+        print('eq: {0:0.3f}, fi: {1:0.3f}, co: {2:0.3f}, ca: {3:0.3f}, d/w: {4:0.3f}, re: {5:0.3f}, total: {6:0.3f}'.format(float(row['Asset Composition - Equities']), float(row['Asset Composition - Fixed Income']), float(row['Asset Composition - Commodities']), float(row['Asset Composition - Cash']), float(row['Daily Contribution/Withdrawals']), float(row['Return Value']), float(row['Total Value'])))
+        current_aum_sum = float(row['Asset Composition - Equities']) + float(row['Asset Composition - Fixed Income']) + float(row['Asset Composition - Commodities']) + float(row['Asset Composition - Cash'])
+        if first_record:
+            first_record = False
+            previous_aum_sum = current_aum_sum
+
+        delta = (current_aum_sum - previous_aum_sum) / previous_aum_sum
+        date = startDate + timedelta(days=index)
+        ETFHistory.objects.get_or_create(etf=etf, date=date, delta=delta, equity_pct=float(row['Asset Composition - Equities']), 
+                                        fixed_income_pct=float(row['Asset Composition - Fixed Income']), 
+                                        commodities_pct=float(row['Asset Composition - Commodities']), 
+                                        cash_pct=float(row['Asset Composition - Cash']))
+        index += 1
+        previous_aum_sum = current_aum_sum
+
 def generateETFMonthlySummary(etfs):
     for etf in etfs:
         monthlySummary = etf.history.annotate(month=TruncMonth('date')).values('month').annotate(delta=Avg('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('month')
         for monthly in monthlySummary: 
-            print(monthly)       
-            ETFMonthlySummary.objects.get_or_create(etf=etf, date=monthly['month'], delta=monthly['delta'], equity_pct=monthly['eq_pct'], 
+            print(monthly)
+            end_month_day = calendar.monthrange(monthly['month'].year, monthly['month'].month)[1]
+            month_year_date = monthly['month'].replace(day=end_month_day)
+            ETFMonthlySummary.objects.get_or_create(etf=etf, date=month_year_date, delta=monthly['delta'], equity_pct=monthly['eq_pct'], 
                                                 fixed_income_pct=monthly['fi_pct'], commodities_pct=monthly['co_pct'], cash_pct=monthly['ca_pct'])
 
 def generateETFYearlySummary(etfs):
     for etf in etfs:
         yearlySummary = etf.history.annotate(year=TruncYear('date')).values('year').annotate(delta=Avg('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('year')
         for yearly in yearlySummary: 
-            print(yearly)       
-            ETFYearlySummary.objects.get_or_create(etf=etf, date=yearly['year'], delta=yearly['delta'], equity_pct=yearly['eq_pct'], 
+            print(yearly)
+            year_date = yearly['year'].replace(day=31, month=12)    
+            ETFYearlySummary.objects.get_or_create(etf=etf, date=year_date, delta=yearly['delta'], equity_pct=yearly['eq_pct'], 
                                                 fixed_income_pct=yearly['fi_pct'], commodities_pct=yearly['co_pct'], cash_pct=yearly['ca_pct'])
 
 
 def generateAccounts(etfs):
     accounts = []
-    accountsDict = [{'name': 'Jing Xia','mobileNo': '83999123', 'selectedETF': etfs[0]},
+    accountsDict = [{'name': 'Jing Xia','mobileNo': '83999123', 'selectedETF': etfs[1]},
         #{'name': 'Katy Parrot','mobileNo': '83666384', 'selectedETF': etfs[1]},
         #{'name': 'Kaley Coco','mobileNo': '83555384', 'selectedETF': etfs[2]},
     ]
@@ -194,17 +219,20 @@ def generateYearlySummary(accounts):
                 
 
 def populate():
-    nDays=40
     etfs = generateETFs()
-    accounts = generateAccounts(etfs)
+    #accounts = generateAccounts(etfs)
     
-    #generateETFMonthlySummary(etfs)
-    #generateETFYearlySummary(etfs)
+    #with open('../data.csv', mode='r') as csv_file:
+    #    csv_reader = csv.DictReader(csv_file)
+    #    generateETFHistoriesFromFile(etfs[1], csv_reader)
+    
+    generateETFMonthlySummary(etfs)
+    generateETFYearlySummary(etfs)
     #generateETFHistories(etfs)
     #generateAccountTransaction(accounts)
     #generateProfitAccountTransaction(accounts)
     #generateMonthlySummary(accounts)
-    generateYearlySummary(accounts)
+    #generateYearlySummary(accounts)
 
 
 if __name__ == '__main__':
