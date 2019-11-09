@@ -28,6 +28,8 @@ def updateETFHistory(nForward=0):
 
     for etf in etfs:
         etf_history = etf.history.order_by('-date').first()
+        if etf_history is None:
+            continue
         print(etf_history)
         today_date = datetime.now().date()
         day_diff = today_date - etf_history.date
@@ -35,9 +37,9 @@ def updateETFHistory(nForward=0):
         if day_diff.days > 1:
             for aDate in (etf_history.date + timedelta(days=n) for n in range(1, day_diff.days+nForward)):
                 delta = (riskLevel + 1) * random.randint(20, 40)/10000
-                eq_pct = aum[riskLevel]['eq'] + random.randint(-40, 40)/10000
-                fi_pct = aum[riskLevel]['fi'] + random.randint(-40, 40)/10000
-                co_pct = aum[riskLevel]['co'] + random.randint(-40, 40)/10000
+                eq_pct = etf_history.equity_pct + random.randint(-40, 40)/10000
+                fi_pct = etf_history.fixed_income_pct + random.randint(-40, 40)/10000
+                co_pct = etf_history.commodities_pct + random.randint(-40, 40)/10000
                 ca_pct = 1 - (eq_pct + fi_pct + co_pct)
                 ETFHistory.objects.get_or_create(etf=etf, date=aDate, delta=delta, equity_pct = eq_pct, 
                                                 fixed_income_pct = fi_pct, commodities_pct = co_pct, cash_pct = ca_pct)
@@ -51,6 +53,9 @@ def updateTransactionProfit(nForward=0):
     for account in accounts:
         etfHistory = account.selectedETF.history.order_by('date')
         profit_txns = list(filter(lambda txn: txn.type == AccountTransaction.TYPERETURN or txn.type == AccountTransaction.TYPELOSS, account.transactions.order_by('dateTime')))
+        if len(profit_txns) <= 0:
+            continue
+        
         lastProfitDate = profit_txns[-1].dateTime.date()
         today_date = datetime.today().date()
 

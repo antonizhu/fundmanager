@@ -59,29 +59,21 @@ def generateETFHistories(etfs):
         riskLevel += 1
 
 def generateETFHistoriesFromFile(etf, csv_reader):
-    previous_aum_sum = 0
-    first_record = True 
+    
     startDate = datetime.now().date() - timedelta(days=nDays)
     index = 0
     for row in csv_reader:
         print('eq: {0:0.3f}, fi: {1:0.3f}, co: {2:0.3f}, ca: {3:0.3f}, d/w: {4:0.3f}, re: {5:0.3f}, total: {6:0.3f}'.format(float(row['Asset Composition - Equities']), float(row['Asset Composition - Fixed Income']), float(row['Asset Composition - Commodities']), float(row['Asset Composition - Cash']), float(row['Daily Contribution/Withdrawals']), float(row['Return Value']), float(row['Total Value'])))
-        current_aum_sum = float(row['Asset Composition - Equities']) + float(row['Asset Composition - Fixed Income']) + float(row['Asset Composition - Commodities']) + float(row['Asset Composition - Cash'])
-        if first_record:
-            first_record = False
-            previous_aum_sum = current_aum_sum
-
-        delta = (current_aum_sum - previous_aum_sum) / previous_aum_sum
         date = startDate + timedelta(days=index)
-        ETFHistory.objects.get_or_create(etf=etf, date=date, delta=delta, equity_pct=float(row['Asset Composition - Equities']), 
+        ETFHistory.objects.get_or_create(etf=etf, date=date, delta=row['delta'], equity_pct=float(row['Asset Composition - Equities']), 
                                         fixed_income_pct=float(row['Asset Composition - Fixed Income']), 
                                         commodities_pct=float(row['Asset Composition - Commodities']), 
                                         cash_pct=float(row['Asset Composition - Cash']))
         index += 1
-        previous_aum_sum = current_aum_sum
 
 def generateETFMonthlySummary(etfs):
     for etf in etfs:
-        monthlySummary = etf.history.annotate(month=TruncMonth('date')).values('month').annotate(delta=Avg('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('month')
+        monthlySummary = etf.history.annotate(month=TruncMonth('date')).values('month').annotate(delta=Sum('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('month')
         for monthly in monthlySummary: 
             print(monthly)
             end_month_day = calendar.monthrange(monthly['month'].year, monthly['month'].month)[1]
@@ -91,7 +83,7 @@ def generateETFMonthlySummary(etfs):
 
 def generateETFYearlySummary(etfs):
     for etf in etfs:
-        yearlySummary = etf.history.annotate(year=TruncYear('date')).values('year').annotate(delta=Avg('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('year')
+        yearlySummary = etf.history.annotate(year=TruncYear('date')).values('year').annotate(delta=Sum('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('year')
         for yearly in yearlySummary: 
             print(yearly)
             year_date = yearly['year'].replace(day=31, month=12)    
@@ -121,7 +113,23 @@ def generateAccountTransaction(accounts):
             aDate = aDate.replace(hour= random.randint(9,15))
 
             amount = round((0.1 + random.random()) % 1.0, 2)
-            AccountTransaction.objects.get_or_create(account = account, amount = amount, dateTime = aDate)
+            AccountTransaction.objects.get_or_create(account=account, amount=amount, dateTime=aDate)
+
+def generateAccountTransactionFromFile(account, csv_reader):
+    startDate = datetime.now(tz=timezone.utc) - timedelta(days=nDays)
+    index = 0
+    for row in csv_reader:
+        print('d/w: {0:0.3f}'.format(float(row['Daily Contribution/Withdrawals'])))
+        date = startDate + timedelta(days=index)
+        amount = float(row['Daily Contribution/Withdrawals'])
+        if amount < 0:
+            type = AccountTransaction.TYPEWITHDRAW
+            amount = abs(amount)
+        else:
+            type = AccountTransaction.TYPEDEPOSIT
+
+        AccountTransaction.objects.get_or_create(account=account, amount=amount, dateTime=date, type=type)
+        index += 1
 
 def generateProfitAccountTransaction(accounts):
     for account in accounts:
@@ -220,19 +228,22 @@ def generateYearlySummary(accounts):
 
 def populate():
     etfs = generateETFs()
-    #accounts = generateAccounts(etfs)
+    accounts = generateAccounts(etfs)
     
     #with open('../data.csv', mode='r') as csv_file:
     #    csv_reader = csv.DictReader(csv_file)
     #    generateETFHistoriesFromFile(etfs[1], csv_reader)
     
-    generateETFMonthlySummary(etfs)
-    generateETFYearlySummary(etfs)
-    #generateETFHistories(etfs)
-    #generateAccountTransaction(accounts)
+    #generateETFMonthlySummary(etfs)
+    #generateETFYearlySummary(etfs)
+
+    #with open('../data.csv', mode='r') as csv_file:
+    #    csv_reader = csv.DictReader(csv_file)
+    #    generateAccountTransactionFromFile(accounts[0], csv_reader)
+
     #generateProfitAccountTransaction(accounts)
-    #generateMonthlySummary(accounts)
-    #generateYearlySummary(accounts)
+    generateMonthlySummary(accounts)
+    generateYearlySummary(accounts)
 
 
 if __name__ == '__main__':
