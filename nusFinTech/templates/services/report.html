@@ -9,22 +9,20 @@
                 <div class="col col-lg-2"><small>Return</small></div>
             </div>
             <div class="row justify-content-md-center">
-                {% with final_trxn=ledger|last %}
-                <div class="col col-lg-2"><h2>{{ final_trxn.balance|floatformat:3 }}</h2></div>
+                <div class="col col-lg-2"><h2>{{ summary.last_balance|floatformat:3 }}</h2></div>
                 <div class="col col-lg-2">
-                {% if final_trxn.profit > 0 %}
-                    <h2 class="text-success">{{ final_trxn.profit|floatformat:3 }}</h2>
+                {% if summary.last_profit > 0 %}
+                    <h2 class="text-success">{{ summary.last_profit|floatformat:3 }}</h2>
                 {% else %}
-                    <h2 class="text-danger">{{ final_trxn.profit|floatformat:3 }}</h2>
+                    <h2 class="text-danger">{{ summary.last_profit|floatformat:3 }}</h2>
                 {% endif %}
                 </div>
-                {% endwith%}
             </div>
 
         </div>
         <h2>Daily Accumulation</h2>
         <div class="float-left w-50">
-        {% for trxn in ledger reversed %}
+        {% for trxn in summary.transactionLedger reversed %}
         <div class="container border-bottom border-dark">
             <div class="row justify-content-md-left">
                 <div class="col col-lg-2 font-weight-bold">Return</div>
@@ -62,7 +60,7 @@
                     type: 'bar',
                     data: {
                         labels: [
-                        {% for trxn in ledger %}
+                        {% for trxn in summary.transactionLedger %}
                             '{{trxn.transactionDate|date:"d/m/Y"}}',
                         {% endfor %}
                         ],
@@ -71,7 +69,7 @@
                             backgroundColor: '#36a2eb',
                             stack: 'Stack 0',
                             data: [
-                            {% for trxn in ledger %}
+                            {% for trxn in summary.transactionLedger %}
                             {{trxn.balance|floatformat:3}},
                             {% endfor %}
                             ]

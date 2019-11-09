@@ -133,7 +133,7 @@ def transactionHistory(request):
 @login_required(login_url='user_login')
 def report(request):
     accountSummary = AccountSummary(account=Account.objects.get(user=request.user))
-    return render(request, 'services/report.html', {'ledger': accountSummary.transactionLedger})
+    return render(request, 'services/report.html', {'summary': accountSummary})
 
 @login_required(login_url='user_login')
 def monthlyReport(request):

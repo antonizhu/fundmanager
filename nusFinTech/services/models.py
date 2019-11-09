@@ -130,7 +130,10 @@ class TransactionPrice():
 class AccountSummary():
     def __init__(self, account):
         transactions = AccountTransaction.objects.filter(account=account).order_by('dateTime')
-        
+        today = datetime.now().date()
+        self.last_balance = 0
+        self.last_profit = 0
+
         self.transactionLedger = []
         balance = 0
         print('total no of transactions {0}'.format(str(len(transactions))))
@@ -148,5 +151,14 @@ class AccountSummary():
                 balance = transactionPrice.balance
                 self.transactionLedger.append(transactionPrice)
 
-        for trxn in self.transactionLedger:
-            print(trxn)
+        if len(self.transactionLedger) > 0:
+            
+            self.last_balance = self.transactionLedger[-1].balance
+
+            if self.transactionLedger[-1].transactionDate == today:
+                if len(self.transactionLedger) > 1:
+                    self.last_profit = self.transactionLedger[-2].profit
+                else:
+                    self.last_profit = 0
+            else:
+                self.last_profit = self.transactionLedger[-1].profit
