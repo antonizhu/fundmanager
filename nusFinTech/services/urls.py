@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.index, name='index'),
 	path('portfolio_composition', views.portfolioComposition, name='portfolio_composition'),
 	path('account_setting', views.accountSetting, name='account_setting'),
+    path('submit_score', views.submit_score, name='submit_score'),
     path('makeTransaction', views.makeTransaction, name='makeTransaction'),
     path('withdraw', views.withdraw, name='withdraw'),
     path('timeSeriesAUM', views.timeSeriesAUM, name='timeSeriesAUM'),

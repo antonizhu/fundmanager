@@ -1,11 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.csrf import csrf_exempt
 from services.forms import AccountTransactionForm, UserForm, AccountForm, AccountETFForm
-from services.models import Account, AccountTransaction, AccountSummary, MonthlySummary
+from services.models import Account, AccountTransaction, AccountSummary, MonthlySummary, ETF
 from datetime import datetime
 
 from django.contrib.auth import get_user_model, get_user
@@ -187,7 +188,7 @@ def user_consent(request):
     print("Username : {0}".format(request.user.username))
 
     account = Account.objects.get(user=request.user)
-    if request.method == 'POST' and request.POST.get('agree') == 'True':
+    if request.method == 'POST' and request.POST.get('choice') == 'True':
         print("Consent value given by user True")
 
         account.consentGiven = True
@@ -196,6 +197,24 @@ def user_consent(request):
     
     return render(request, 'services/consent.html', {'name': account.name})
 
+@csrf_exempt
+@login_required(login_url='user_login')
+def submit_score(request):
+    account = Account.objects.get(user=request.user)
+    print('logged in as {0} with request method {1}'.format(account.name, request.method))
+
+    if request.method == 'POST':
+        score = int(request.POST.get('score'))
+        print('score submitted: {0}'.format(str(score)))
+        if score <= 30:
+            account.selectedETF = ETF.objects.get(id=1)
+        elif score <= 47:
+            account.selectedETF = ETF.objects.get(id=2)
+        else:
+            account.selectedETF = ETF.objects.get(id=3)
+        account.save()
+
+    return redirect('services:account_setting')
         
 def user_login(request):
     if request.method == 'POST':

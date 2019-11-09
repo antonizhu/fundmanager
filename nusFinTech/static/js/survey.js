@@ -215,7 +215,7 @@ var json = {
                     "type": "radiogroup",
                     "name": "income_requirements",
                     //"visibleIf": "{supported_devices} contains \"Mobile\"",
-                    "title": ". What are your current income requirements from your investments?",
+                    "title": "What are your current income requirements from your investments?",
                     //"isRequired": true,
                     "choices": [
                         {
@@ -259,14 +259,16 @@ var json = {
     "Conservative Investor should seriously consider whether he should be putting his<br/>"+
     "money in investments other than in fixed deposit. A Conservative Investor will not<br/>"+
     "be allowed to trade Specified Investment Products ("+"SIPs"+")* with us as there are<br/>"+
-    "currently no SIPs which bear little or no risk of capital loss</td></tr></tbody></table>"
+    "currently no SIPs which bear little or no risk of capital loss</td></tr></tbody></table><br/>"
+    
 };
 
 window.survey = new Survey.Model(json);
 
 survey.onComplete.add(function (result, total_score) {
         total_score = result.data.investment_objectives+result.data.risk_capital_percentage+result.data.saving_duration+result.data.inflation_effects+result.data.emergencies_saving+result.data.asset_mixes+result.data.expected_return+result.data.investment_fluctuation+result.data.profolio_decrease+result.data.capital_preservation+result.data.income_requirements;
-		document.querySelector('#score').textContent = total_score.toString();
+        document.querySelector('#score').textContent = total_score.toString();
+        document.querySelector('#surveyResult').innerHTML = "<form class='form-group' method='POST' action='services/submit_score'><h4>Click Submit to auto-assign to our AUM that fits your Risk Tolerance!<input name='score' value='"+total_score+"' type='hidden' /><button type='submit' class='btn btn-primary mb-2'>Submit Score</button></h4></form>"
         return total_score;
     });
     
