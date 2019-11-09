@@ -7,15 +7,20 @@ django.setup()
 
 import random
 from services.models import ETF, ETFHistory, Account, AccountTransaction, MonthlySummary, YearlySummary
+from services.models import ETFMonthlySummary, ETFYearlySummary
 from faker import Faker
 from datetime import datetime
 from datetime import timedelta
 from django.utils import timezone
+from django.db import models
+from django.db.models import Func, F, Avg, Count, Sum
+from django.db.models.functions import TruncMonth, TruncYear
+
 import calendar
 from dateutil.relativedelta import relativedelta
 
 fakegen = Faker()
-nDays = 20
+nDays = 50
 
 def generateETFs():
 
@@ -41,16 +46,33 @@ def generateETFHistories(etfs):
     riskLevel = 0
     for etf in etfs:
         
-        for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
+        for aDate in (startDate + timedelta(days= n) for n in range(nDays)):
             delta = (riskLevel + 1) * random.randint(20,40)/10000
             eq_pct = aum[riskLevel]['eq'] + random.randint(-40, 40)/10000
             fi_pct = aum[riskLevel]['fi'] + random.randint(-40, 40)/10000
             co_pct = aum[riskLevel]['co'] + random.randint(-40, 40)/10000
             ca_pct = 1 - (eq_pct + fi_pct + co_pct)
-            ETFHistory.objects.get_or_create(etf=etf, date=aDate, delta=delta, equity_pct = eq_pct, 
-                                                fixed_income_pct = fi_pct, commodities_pct = co_pct, cash_pct = ca_pct)
+            ETFHistory.objects.get_or_create(etf=etf, date=aDate, delta=delta, equity_pct=eq_pct, 
+                                                fixed_income_pct=fi_pct, commodities_pct=co_pct, cash_pct=ca_pct)
             
         riskLevel += 1
+
+def generateETFMonthlySummary(etfs):
+    for etf in etfs:
+        monthlySummary = etf.history.annotate(month=TruncMonth('date')).values('month').annotate(delta=Avg('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('month')
+        for monthly in monthlySummary: 
+            print(monthly)       
+            ETFMonthlySummary.objects.get_or_create(etf=etf, date=monthly['month'], delta=monthly['delta'], equity_pct=monthly['eq_pct'], 
+                                                fixed_income_pct=monthly['fi_pct'], commodities_pct=monthly['co_pct'], cash_pct=monthly['ca_pct'])
+
+def generateETFYearlySummary(etfs):
+    for etf in etfs:
+        yearlySummary = etf.history.annotate(year=TruncYear('date')).values('year').annotate(delta=Avg('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('year')
+        for yearly in yearlySummary: 
+            print(yearly)       
+            ETFYearlySummary.objects.get_or_create(etf=etf, date=yearly['year'], delta=yearly['delta'], equity_pct=yearly['eq_pct'], 
+                                                fixed_income_pct=yearly['fi_pct'], commodities_pct=yearly['co_pct'], cash_pct=yearly['ca_pct'])
+
 
 def generateAccounts(etfs):
     accounts = []
@@ -70,7 +92,7 @@ def generateAccountTransaction(accounts):
 
     startDate = datetime.now() - timedelta(days= nDays)
     for account in accounts:
-        for aDate in (startDate + timedelta(days= n) for n in range(nDays+1)):
+        for aDate in (startDate + timedelta(days= n) for n in range(nDays)):
             aDate = aDate.replace(hour= random.randint(9,15))
 
             amount = round((0.1 + random.random()) % 1.0, 2)
@@ -100,32 +122,53 @@ def generateProfitAccountTransaction(accounts):
             print('{0} {1} {2} {3}'.format(str(balance), str(amount), str(transaction_type), str(date)))
             AccountTransaction.objects.get_or_create(account=account, amount=amount, dateTime=date, type=transaction_type)
 
+
+
 nMonths = 24
 def generateMonthlySummary(accounts):
     #account 1 low, account 2 medium, account 3 high
     
     risk_level = 0
     for account in accounts:
-        risk_level += 1
 
-        start_date = datetime.now(tz=timezone.utc).date()
-        end_month_day = calendar.monthrange(start_date.year, start_date.month)[1]
-        start_date = start_date.replace(day=end_month_day)
-        start_date = start_date - relativedelta(months=nMonths)
+        monthlySummary = account.transactions.annotate(month=TruncMonth('dateTime')).values('month', 'type').annotate(total=Sum('amount')).order_by('month')
+        
+        previous_closing_balance = 0
+        accountMonthlySummary = {}
 
-        profit_rate = random.randint(1, 10)/100*risk_level
-        closing_balance = random.randint(100, 150)
-        profit = closing_balance * profit_rate
-        closing_balance = closing_balance + profit
-
-        for n in range(0, nMonths):
-            date = start_date + relativedelta(months=n)
-            MonthlySummary.objects.get_or_create(account=account, closing_balance = closing_balance, profit=profit, month_year_date=date)
+        for monthly in monthlySummary:
+            print(monthly)
+            if str(monthly['month']) not in accountMonthlySummary:
+                end_month_day = calendar.monthrange(monthly['month'].year, monthly['month'].month)[1]
+                month_year_date = monthly['month'].replace(day=end_month_day)
+                summary = MonthlySummary(account=account, month_year_date= month_year_date, closing_balance=previous_closing_balance, profit=0)
+            else:
+                summary = accountMonthlySummary[str(monthly['month'])]
             
-            profit_rate = random.randint(1, 7)/100*risk_level
-            profit = closing_balance * profit_rate
-            closing_balance += profit
+            if monthly['type'] == AccountTransaction.TYPEDEPOSIT:
+                summary.closing_balance += monthly['total']
+                previous_closing_balance += monthly['total']
+            elif monthly['type'] == AccountTransaction.TYPEWITHDRAW:
+                summary.closing_balance -= monthly['total']
+                previous_closing_balance -= monthly['total']
+            elif monthly['type'] == AccountTransaction.TYPERETURN:
+                summary.closing_balance += monthly['total']
+                previous_closing_balance += monthly['total']
+                summary.profit += monthly['total']
+            elif monthly['type'] == AccountTransaction.TYPELOSS:
+                summary.closing_balance -= monthly['total']
+                previous_closing_balance -= monthly['total']
+                summary.profit -= monthly['total']
+            else:
+                raise Exception('unknonw transaction type: {0}'.format(str(monthly['type'])))
+            
+            accountMonthlySummary[str(monthly['month'])] = summary
 
+        for monthly in accountMonthlySummary.values():
+            print(monthly)
+            MonthlySummary.objects.get_or_create(account=monthly.account, closing_balance=monthly.closing_balance, profit=monthly.profit, month_year_date=monthly.month_year_date)
+            
+        
 def generateYearlySummary(accounts):
     for account in accounts:
         monthly_summaries = account.monthly_summary.order_by('month_year_date')
@@ -149,15 +192,19 @@ def generateYearlySummary(accounts):
                 
         YearlySummary.objects.get_or_create(account=account, closing_balance=closing_balance, profit=profit, year_date=month_year_date)
                 
-    
+
 def populate():
+    nDays=40
     etfs = generateETFs()
-    #accounts = generateAccounts(etfs)
-    generateETFHistories(etfs)
+    accounts = generateAccounts(etfs)
+    
+    #generateETFMonthlySummary(etfs)
+    #generateETFYearlySummary(etfs)
+    #generateETFHistories(etfs)
     #generateAccountTransaction(accounts)
     #generateProfitAccountTransaction(accounts)
     #generateMonthlySummary(accounts)
-    #generateYearlySummary(accounts)
+    generateYearlySummary(accounts)
 
 
 if __name__ == '__main__':
