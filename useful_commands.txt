@@ -11,6 +11,7 @@ Virtual environment creation:
 2. Type : cd <your project dir>
 3. Type	: conda  create --name nusDjangoEnv
 4. Type : conda activate nusDjangoEnv
+4a.Type : pip install -r requirements.txt
 5. Type	: conda install django
 6. Type : django-admin startproject nusFinTech
 8. Type : cd nusFinTech
