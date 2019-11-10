@@ -41,3 +41,6 @@ List virtual environment:
 
 Format database:
 Type : python manage.py flush
+
+Extract requirements library for dev:
+Type : pip freeze > requirements.txt
