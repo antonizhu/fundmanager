@@ -1,0 +1,17 @@
+1. Install python 3 from: https://www.python.org/ftp/python/3.8.0/python-3.8.0.exe
+2. Launch command prompt (type: cmd)
+3. Change Directory to the project folder (type: cd xyz)
+4. At command prompt, type: python install -r requirement
+5. At command prompt, type: cd nusFinTech
+6. At command prompt, type: python manage.py runserver
+7. Go to web browser and open: http://localhost:8000
+8. Login/Password: jingxia/1234ABCD
+
+
+
+Things to DELETE before submission:
+1. .git folder
+2. .vscode folder
+3. nusFinTech/nusFinTech/__pycache__
+4. nusFinTech/services/__pycache__
+5. nusFinTech/services/migrations
