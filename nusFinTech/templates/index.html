@@ -27,7 +27,7 @@
                 var myChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Equity', 'Fixed Income', 'Commodity', 'Cash'],
+                        labels: ['Equity (%)', 'Fixed Income (%)', 'Commodity (%)', 'Cash (%)'],
                         datasets: [{
 							data: [{{ etf_history.equity_pct }}, {{ etf_history.fixed_income_pct }}, {{ etf_history.commodities_pct }}, {{ etf_history.cash_pct }}],
 							backgroundColor: [ '#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],

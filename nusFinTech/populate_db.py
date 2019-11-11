@@ -230,18 +230,18 @@ def populate():
     etfs = generateETFs()
     accounts = generateAccounts(etfs)
     
-    #with open('../data.csv', mode='r') as csv_file:
-    #    csv_reader = csv.DictReader(csv_file)
-    #    generateETFHistoriesFromFile(etfs[1], csv_reader)
+    with open('../data.csv', mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        generateETFHistoriesFromFile(etfs[1], csv_reader)
     
-    #generateETFMonthlySummary(etfs)
-    #generateETFYearlySummary(etfs)
+    generateETFMonthlySummary(etfs)
+    generateETFYearlySummary(etfs)
 
-    #with open('../data.csv', mode='r') as csv_file:
-    #    csv_reader = csv.DictReader(csv_file)
-    #    generateAccountTransactionFromFile(accounts[0], csv_reader)
+    with open('../data.csv', mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        generateAccountTransactionFromFile(accounts[0], csv_reader)
 
-    #generateProfitAccountTransaction(accounts)
+    generateProfitAccountTransaction(accounts)
     generateMonthlySummary(accounts)
     generateYearlySummary(accounts)
 

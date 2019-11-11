@@ -17,7 +17,12 @@ User = get_user_model()
 def index(request):
     today = datetime.now(tz=timezone.utc).date()
     account = Account.objects.get(user=request.user)
-    return render(request, 'index.html', {'etf_history': account.selectedETF.history.order_by('date').last()})
+    lastETF = account.selectedETF.history.order_by('date').last()
+    lastETF.equity_pct = round(lastETF.equity_pct*100,2)
+    lastETF.fixed_income_pct = round(lastETF.fixed_income_pct*100,2)
+    lastETF.commodities_pct = round(lastETF.commodities_pct*100,2)
+    lastETF.cash_pct = round(lastETF.cash_pct*100,2)
+    return render(request, 'index.html', {'etf_history': lastETF})
 
 @login_required(login_url='user_login')
 def portfolioComposition(request):
