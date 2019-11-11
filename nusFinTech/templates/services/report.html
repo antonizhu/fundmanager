@@ -20,7 +20,7 @@
             </div>
 
         </div>
-        <h2>Daily Accumulation</h2>
+        <h2>{{ title }}</h2>
         <div class="float-left w-50">
         {% for trxn in summary.transactionLedger reversed %}
         <div class="container border-bottom border-dark">
@@ -79,7 +79,7 @@
                             backgroundColor: '#ff6384',
                             stack: 'Stack 0',
                             data: [    
-                            {% for trxn in ledger %}
+                            {% for trxn in summary.transactionLedger %}
                             {{trxn.profit|floatformat:3}},
                             {% endfor %}
                             ]
@@ -89,7 +89,7 @@
                     options: {
                         title: {
                             display: true,
-                            text: 'Daily Accumulation'
+                            text: '{{ title }}'
                         },
                         tooltips: {
                             mode: 'index',

@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
 from services.forms import AccountTransactionForm, UserForm, AccountForm, AccountETFForm
 from services.models import Account, AccountTransaction, AccountSummary, MonthlySummary, ETF
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model, get_user
 User = get_user_model()
@@ -138,8 +138,26 @@ def transactionHistory(request):
 
 @login_required(login_url='user_login')
 def report(request):
+    title = 'Last 30 Days Accumulation'
     accountSummary = AccountSummary(account=Account.objects.get(user=request.user))
-    return render(request, 'services/report.html', {'summary': accountSummary})
+    period = request.GET.get('period', '')
+
+    print('Period is "{0}"'.format(period))
+    
+    if period == '':
+        today = datetime.now().date() - timedelta(30)
+        accountSummary.transactionLedger = list(filter(lambda trxn : trxn.transactionDate > today, accountSummary.transactionLedger))
+    else:
+        title = 'Daily Accumulation for {0}'.format(period)
+        date = datetime.strptime(period, '%m/%Y')
+        print('{0}'.format(str(date)))
+        trxns = list(filter(lambda trxn : datetime(trxn.transactionDate.year, trxn.transactionDate.month, 1) == date, accountSummary.transactionLedger))
+        for trxn in trxns: 
+            print(trxn)
+        accountSummary.transactionLedger = list(filter(lambda trxn : datetime(trxn.transactionDate.year, trxn.transactionDate.month, 1) == date, accountSummary.transactionLedger))
+
+    print('transaction ledger length: {0}'.format(str(len(accountSummary.transactionLedger))))
+    return render(request, 'services/report.html', {'title': title, 'summary': accountSummary})
 
 @login_required(login_url='user_login')
 def monthlyReport(request):

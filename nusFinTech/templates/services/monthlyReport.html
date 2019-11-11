@@ -89,6 +89,14 @@
                         }
                     }
                 })
+
+                ctx.onclick = function(e) {
+                    var slice = myChart.getElementAtEvent(e);
+                    if (!slice.length) return;
+
+                    var label = slice[0]._model.label;
+                    window.location = "{% url 'services:report' %}?period="+label
+                }
             }())
 
         </script>
