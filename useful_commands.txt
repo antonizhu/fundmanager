@@ -18,26 +18,29 @@ Virtual environment creation:
 8. Type : python manage.py startapp services
 7. Type : python manage.py runserver
 
+Visualise in Brownser:
+1. http://localhost:8000/
+2. login credentials: username/pw: jingxia/1234ABCD
+
 Generate the db model:
-8. Type : python manage.py migrate
-9. Type : python manage.py makemigrations
-10. Type again : python manage.py migrate
+1. Type : python manage.py migrate
+2. Type : python manage.py makemigrations
+3. Type again : python manage.py migrate
 
 Create db admin user: (user/pw: admin/admin)
-11. Type: pyhon manage.py createsuperuser
-12. to login and manage records go to: http://localhost:8000/admin 
+1. Type: pyhon manage.py createsuperuser
+2. to login and manage records go to: http://localhost:8000/admin 
 
 Populate DB with dummy/fake data:
-13. Type: pip install fake
+1. Type: pip install fake
 
 Create user account for login:
-14. Type: pip install bcrypt
-15. Type: pip install django[argon2]
+1. Type: pip install bcrypt
+2. Type: pip install django[argon2]
 
 List virtual environment:
 1. From windows, find "Anaconda Prompt"
 2. Open command prompt and type: conda info --envs
-
 
 Format database:
 Type : python manage.py flush

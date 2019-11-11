@@ -1,7 +1,0 @@
-{
-    "python.pythonPath": "C:\\app\\Anaconda3\\envs\\nusDjangoEnv\\python.exe"
-	"python.linting.pylintArgs": [
-        "--load-plugins",
-        "pylint_django"
-    ]
-}

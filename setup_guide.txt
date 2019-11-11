@@ -6,12 +6,3 @@
 6. At command prompt, type: python manage.py runserver
 7. Go to web browser and open: http://localhost:8000
 8. Login/Password: jingxia/1234ABCD
-
-
-
-Things to DELETE before submission:
-1. .git folder
-2. .vscode folder
-3. nusFinTech/nusFinTech/__pycache__
-4. nusFinTech/services/__pycache__
-5. nusFinTech/services/migrations
