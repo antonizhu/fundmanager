@@ -4,6 +4,10 @@ from services import views
 from services.models import ETF, ETFHistory, Account, AccountTransaction, AccountSummary
 from datetime import datetime, timedelta
 import random
+
+import logging
+logger = logging.getLogger('urls')
+
 app_name = 'services'
 urlpatterns = [
     path('', views.index, name='index'),
@@ -20,7 +24,7 @@ urlpatterns = [
 ]
 
 def updateETFHistory(nForward=0):
-    print('updating etf history from last update to today...')
+    logger.info('updating etf history from last update to today...')
     etfs = ETF.objects.all()
     aum = [ {'eq': 0.2, 'fi': 0.2, 'co': 0.2, 'ca': 0.4}, 
             {'eq': 0.3, 'fi': 0.2, 'co': 0.3, 'ca': 0.2}, 
@@ -31,10 +35,10 @@ def updateETFHistory(nForward=0):
         etf_history = etf.history.order_by('-date').first()
         if etf_history is None:
             continue
-        print(etf_history)
+        logger.info(etf_history)
         today_date = datetime.now().date()
         day_diff = today_date - etf_history.date
-        print('{0} days since last patch to ETF History!'.format(day_diff.days))
+        logger.info('{0} days since last patch to ETF History!'.format(day_diff.days))
         if day_diff.days > 1:
             for aDate in (etf_history.date + timedelta(days=n) for n in range(1, day_diff.days+nForward)):
                 delta = (riskLevel + 1) * random.randint(20, 40)/10000
@@ -49,7 +53,7 @@ def updateETFHistory(nForward=0):
 
 
 def updateTransactionProfit(nForward=0):
-    print('updating Transaction Profit history from last update to yesterday...')
+    logger.info('updating Transaction Profit history from last update to yesterday...')
     accounts = Account.objects.all()
     for account in accounts:
         etfHistory = account.selectedETF.history.order_by('date')
@@ -61,7 +65,7 @@ def updateTransactionProfit(nForward=0):
         today_date = datetime.today().date()
 
         day_diff = today_date - lastProfitDate
-        print('{0} days since last patch to Account Profits'.format(str(day_diff.days)))
+        logger.info('{0} days since last patch to Account Profits'.format(str(day_diff.days)))
         if day_diff.days > 1:
             for aDate in (lastProfitDate + timedelta(days=n) for n in range(1, day_diff.days+nForward)):
                 account_summary = AccountSummary(account)

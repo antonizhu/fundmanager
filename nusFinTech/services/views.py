@@ -8,6 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from services.forms import AccountTransactionForm, UserForm, AccountForm, AccountETFForm
 from services.models import Account, AccountTransaction, AccountSummary, MonthlySummary, ETF
 from datetime import datetime, timedelta
+import logging
+logger = logging.getLogger('views')
 
 from django.contrib.auth import get_user_model, get_user
 User = get_user_model()
@@ -39,11 +41,11 @@ def accountSetting(request):
         transaction_performed = True
         account_etf_form = AccountETFForm(request.POST, instance=account)
         if account_etf_form.is_valid() and account_etf_form.cleaned_data['selectedETF'] is not None:
-            print("received post with new value of selected etf: {0}".format(str(account_etf_form.cleaned_data['selectedETF'])))
+            logger.info("received post with new value of selected etf: {0}".format(str(account_etf_form.cleaned_data['selectedETF'])))
             success_message = 'Investment is adjusted to {0}'.format(str(account_etf_form.cleaned_data['selectedETF']))
             account_etf_form.save()
         else:
-            print("Fail to update new risk {0}".format(str(account_etf_form.cleaned_data['selectedETF'])))
+            logger.info("Fail to update new risk {0}".format(str(account_etf_form.cleaned_data['selectedETF'])))
             error_message = 'Failed to adjust investement risk to {0}!'.format(str(account_etf_form.cleaned_data['selectedETF']))
 
     return render(request, 'services/accountSetting.html', {'form': account_etf_form,
@@ -65,7 +67,7 @@ def makeTransaction(request):
         transactionPerformed = True
         if accountTransactionForm.is_valid() and accountTransactionForm.cleaned_data['amount'] > 0:
 
-            print("Amount: "+ str(accountTransactionForm.cleaned_data['amount']))
+            logger.info("Amount: "+ str(accountTransactionForm.cleaned_data['amount']))
             accountTransactionForm.save()
             postMessage = 'Successfully deposit ${0:.2f} to your account!'.format(accountTransactionForm.cleaned_data['amount'])
         else:
@@ -90,20 +92,20 @@ def withdraw(request):
     if request.method == 'POST':
         amount = request.POST.get('amount')
         transactionPerformed = True
-        print ("Amount submitted: {0}".format(str(amount)))
+        logger.info ("Amount submitted: {0}".format(str(amount)))
         account_txn = AccountTransaction(account=account, dateTime=datetime.now(tz=timezone.utc), type=AccountTransaction.TYPEWITHDRAW)
         account_transaction_form = AccountTransactionForm(request.POST, instance=account_txn)
         
         if account_transaction_form.is_valid() and account_transaction_form.cleaned_data['amount'] > 0:
-            print("Allow to transact? {0} {1} - {2}".format(str(account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance), str(account_transaction_form.cleaned_data['amount']), str(account_summary.transactionLedger[-1].balance)))
+            logger.info("Allow to transact? {0} {1} - {2}".format(str(account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance), str(account_transaction_form.cleaned_data['amount']), str(account_summary.transactionLedger[-1].balance)))
         
             if account_transaction_form.cleaned_data['amount'] < account_summary.transactionLedger[-1].balance:
-                print("Withdrawal amount: {0} {1}".format(str(account_transaction_form.cleaned_data['amount']), account_txn.type))
+                logger.info("Withdrawal amount: {0} {1}".format(str(account_transaction_form.cleaned_data['amount']), account_txn.type))
                 account_transaction_form.save()
                 account_summary = AccountSummary(account=account)
                 postMessage = 'Successfully withdraw ${0:.2f} from your account'.format(account_transaction_form.cleaned_data['amount'])
             else:
-                print("Withdrawal over limit!")
+                logger.info("Withdrawal over limit!")
                 noError = False
                 postMessage = 'Withdrawal over limit! You only have ${0:.2f}'.format(account_summary.transactionLedger[-1].balance)
         else:
@@ -142,7 +144,7 @@ def report(request):
     accountSummary = AccountSummary(account=Account.objects.get(user=request.user))
     period = request.GET.get('period', '')
 
-    print('Period is "{0}"'.format(period))
+    logger.info('Period is "{0}"'.format(period))
     
     if period == '':
         today = datetime.now().date() - timedelta(30)
@@ -150,13 +152,13 @@ def report(request):
     else:
         title = 'Daily Accumulation for {0}'.format(period)
         date = datetime.strptime(period, '%m/%Y')
-        print('{0}'.format(str(date)))
+        logger.info('{0}'.format(str(date)))
         trxns = list(filter(lambda trxn : datetime(trxn.transactionDate.year, trxn.transactionDate.month, 1) == date, accountSummary.transactionLedger))
         for trxn in trxns: 
-            print(trxn)
+            logger.info(trxn)
         accountSummary.transactionLedger = list(filter(lambda trxn : datetime(trxn.transactionDate.year, trxn.transactionDate.month, 1) == date, accountSummary.transactionLedger))
 
-    print('transaction ledger length: {0}'.format(str(len(accountSummary.transactionLedger))))
+    logger.info('transaction ledger length: {0}'.format(str(len(accountSummary.transactionLedger))))
     return render(request, 'services/report.html', {'title': title, 'summary': accountSummary})
 
 @login_required(login_url='user_login')
@@ -164,7 +166,7 @@ def monthlyReport(request):
     account = Account.objects.get(user=request.user)
     monthly_summaries = account.monthly_summary.order_by('month_year_date')
     for monthly in monthly_summaries:
-        print(monthly)
+        logger.info(monthly)
     return render(request, 'services/monthlyReport.html', {'ledger' : monthly_summaries})
 
 @login_required(login_url='user_login')
@@ -172,7 +174,7 @@ def yearlyReport(request):
     account = Account.objects.get(user=request.user)
     yearly_summaries = account.yearly_summary.order_by('year_date')
     for yearly in yearly_summaries:
-        print(yearly)
+        logger.info(yearly)
     return render(request, 'services/yearlyReport.html', {'ledger' : yearly_summaries})
 
 
@@ -194,7 +196,7 @@ def register(request):
 
             registered = True
         else:
-            print(user_form.errors, account_form.errors)
+            logger.info(user_form.errors, account_form.errors)
 
     else:
         user_form = UserForm()
@@ -208,11 +210,11 @@ def register(request):
 
 @login_required(login_url='user_login')
 def user_consent(request):
-    print("Username : {0}".format(request.user.username))
+    logger.info("Username : {0}".format(request.user.username))
 
     account = Account.objects.get(user=request.user)
     if request.method == 'POST' and request.POST.get('choice') == 'True':
-        print("Consent value given by user True")
+        logger.info("Consent value given by user True")
 
         account.consentGiven = True
         account.save()
@@ -224,11 +226,11 @@ def user_consent(request):
 @login_required(login_url='user_login')
 def submit_score(request):
     account = Account.objects.get(user=request.user)
-    print('logged in as {0} with request method {1}'.format(account.name, request.method))
+    logger.info('logged in as {0} with request method {1}'.format(account.name, request.method))
 
     if request.method == 'POST':
         score = int(request.POST.get('score'))
-        print('score submitted: {0}'.format(str(score)))
+        logger.info('score submitted: {0}'.format(str(score)))
         if score <= 30:
             account.selectedETF = ETF.objects.get(id=1)
         elif score <= 47:
@@ -250,7 +252,7 @@ def user_login(request):
             if user.is_active:
                 login(request, user)
                 account = Account.objects.get(user=user)
-                print("Consent given {0}".format(account.consentGiven))
+                logger.info("Consent given {0}".format(account.consentGiven))
 
                 if account.consentGiven == True:
                     return HttpResponseRedirect(reverse('index'))
@@ -260,7 +262,7 @@ def user_login(request):
                 return HttpResponse('Account Not Active')
 
         else:
-            print('Fail to login username {0}'.format(username))
+            logger.info('Fail to login username {0}'.format(username))
             return HttpResponse("Invalid  login account!")
     else:
         return render(request, 'login.html')

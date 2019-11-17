@@ -2,6 +2,9 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
 
+import logging
+logger = logging.getLogger('models')
+
 # Create your models here.
 class ETF(models.Model):
     id = models.IntegerField(primary_key=True, auto_created=True, editable=False)
@@ -136,7 +139,7 @@ class AccountSummary():
 
         self.transactionLedger = []
         balance = 0
-        print('total no of transactions {0}'.format(str(len(transactions))))
+        logger.info('total no of transactions {0}'.format(str(len(transactions))))
         for trxn in transactions:
             foundSameDateTrxn = False
             for transactionPrice in self.transactionLedger:

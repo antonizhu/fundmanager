@@ -1,5 +1,8 @@
+import logging
+
 import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE','nusFinTech.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nusFinTech.settings')
+
 
 import django
 django.setup()
@@ -23,18 +26,21 @@ import csv
 fakegen = Faker()
 nDays = 365
 
-def generateETFs():
+import logging
+logger = logging.getLogger('populate_db')
 
+def generateETFs():
+    logger.info('TEST')
     etfList = []
     etfs = ['Low_Risk', 'Medium_Risk', 'High_Risk']
     for etf in etfs:
-        print('getting or creating {0}'.format(etf))
+        logger.info('getting or creating {0}'.format(etf))
         etfObj = ETF.objects.get_or_create(name=etf)[0]
         
         etfList.append(etfObj)
 
     for etfObj in etfList:
-        print(etfObj)
+        logger.info(etfObj)
         
     return etfList
 
@@ -63,7 +69,7 @@ def generateETFHistoriesFromFile(etf, csv_reader):
     startDate = datetime.now().date() - timedelta(days=nDays)
     index = 0
     for row in csv_reader:
-        print('eq: {0:0.3f}, fi: {1:0.3f}, co: {2:0.3f}, ca: {3:0.3f}, d/w: {4:0.3f}, re: {5:0.3f}, total: {6:0.3f}'.format(float(row['Asset Composition - Equities']), float(row['Asset Composition - Fixed Income']), float(row['Asset Composition - Commodities']), float(row['Asset Composition - Cash']), float(row['Daily Contribution/Withdrawals']), float(row['Return Value']), float(row['Total Value'])))
+        logger.info('eq: {0:0.3f}, fi: {1:0.3f}, co: {2:0.3f}, ca: {3:0.3f}, d/w: {4:0.3f}, re: {5:0.3f}, total: {6:0.3f}'.format(float(row['Asset Composition - Equities']), float(row['Asset Composition - Fixed Income']), float(row['Asset Composition - Commodities']), float(row['Asset Composition - Cash']), float(row['Daily Contribution/Withdrawals']), float(row['Return Value']), float(row['Total Value'])))
         date = startDate + timedelta(days=index)
         ETFHistory.objects.get_or_create(etf=etf, date=date, delta=row['delta'], equity_pct=float(row['Asset Composition - Equities']), 
                                         fixed_income_pct=float(row['Asset Composition - Fixed Income']), 
@@ -75,7 +81,7 @@ def generateETFMonthlySummary(etfs):
     for etf in etfs:
         monthlySummary = etf.history.annotate(month=TruncMonth('date')).values('month').annotate(delta=Sum('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('month')
         for monthly in monthlySummary: 
-            print(monthly)
+            logger.info(monthly)
             end_month_day = calendar.monthrange(monthly['month'].year, monthly['month'].month)[1]
             month_year_date = monthly['month'].replace(day=end_month_day)
             ETFMonthlySummary.objects.get_or_create(etf=etf, date=month_year_date, delta=monthly['delta'], equity_pct=monthly['eq_pct'], 
@@ -85,7 +91,7 @@ def generateETFYearlySummary(etfs):
     for etf in etfs:
         yearlySummary = etf.history.annotate(year=TruncYear('date')).values('year').annotate(delta=Sum('delta'), eq_pct=Avg('equity_pct'), fi_pct=Avg('fixed_income_pct'), co_pct=Avg('commodities_pct'), ca_pct=Avg('cash_pct')).order_by('year')
         for yearly in yearlySummary: 
-            print(yearly)
+            logger.info(yearly)
             year_date = yearly['year'].replace(day=31, month=12)    
             ETFYearlySummary.objects.get_or_create(etf=etf, date=year_date, delta=yearly['delta'], equity_pct=yearly['eq_pct'], 
                                                 fixed_income_pct=yearly['fi_pct'], commodities_pct=yearly['co_pct'], cash_pct=yearly['ca_pct'])
@@ -102,7 +108,7 @@ def generateAccounts(etfs):
         accounts.append(account)
 
     for account in accounts:
-        print(account)
+        logger.info(account)
     return accounts
 
 def generateAccountTransaction(accounts):
@@ -119,7 +125,7 @@ def generateAccountTransactionFromFile(account, csv_reader):
     startDate = datetime.now(tz=timezone.utc) - timedelta(days=nDays)
     index = 0
     for row in csv_reader:
-        print('d/w: {0:0.3f}'.format(float(row['Daily Contribution/Withdrawals'])))
+        logger.info('d/w: {0:0.3f}'.format(float(row['Daily Contribution/Withdrawals'])))
         date = startDate + timedelta(days=index)
         amount = float(row['Daily Contribution/Withdrawals'])
         if amount < 0:
@@ -152,7 +158,7 @@ def generateProfitAccountTransaction(accounts):
                 amount = abs(amount)
             date = txn.dateTime
             date = date.replace(hour=23, minute=59, second=59)
-            print('{0} {1} {2} {3}'.format(str(balance), str(amount), str(transaction_type), str(date)))
+            logger.info('{0} {1} {2} {3}'.format(str(balance), str(amount), str(transaction_type), str(date)))
             AccountTransaction.objects.get_or_create(account=account, amount=amount, dateTime=date, type=transaction_type)
 
 
@@ -170,7 +176,7 @@ def generateMonthlySummary(accounts):
         accountMonthlySummary = {}
 
         for monthly in monthlySummary:
-            print(monthly)
+            logger.info(monthly)
             if str(monthly['month']) not in accountMonthlySummary:
                 end_month_day = calendar.monthrange(monthly['month'].year, monthly['month'].month)[1]
                 month_year_date = monthly['month'].replace(day=end_month_day)
@@ -198,7 +204,7 @@ def generateMonthlySummary(accounts):
             accountMonthlySummary[str(monthly['month'])] = summary
 
         for monthly in accountMonthlySummary.values():
-            print(monthly)
+            logger.info(monthly)
             MonthlySummary.objects.get_or_create(account=monthly.account, closing_balance=monthly.closing_balance, profit=monthly.profit, month_year_date=monthly.month_year_date)
             
         
@@ -224,7 +230,16 @@ def generateYearlySummary(accounts):
                 month_year_date = monthly_summary.month_year_date
                 
         YearlySummary.objects.get_or_create(account=account, closing_balance=closing_balance, profit=profit, year_date=month_year_date)
-                
+
+def clearETFHistories():
+     ETFHistory.objects.all().delete() 
+     ETFMonthlySummary.objects.all().delete()
+     ETFYearlySummary.objects.all().delete()
+
+def clearAccountTransactions():
+    AccountTransaction.objects.all().delete()
+    MonthlySummary.objects.all().delete()
+    YearlySummary.objects.all().delete()           
 
 def populate():
     etfs = generateETFs()
@@ -247,6 +262,6 @@ def populate():
 
 
 if __name__ == '__main__':
-    print('populating records...')
+    logger.info('populating records...')
     populate()
-    print('population complete!')
+    logger.info('population complete!')
