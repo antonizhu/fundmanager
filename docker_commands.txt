@@ -1,0 +1,45 @@
+docker system prune							#remove all closed and dangling container and images
+docker ps 									#show all images available in the repository
+
+docker build -t <reponame>:<imagename> . 	#build docker image with given tag
+
+docker run <reponame>:<imagename>			#create container from docker image
+docker run -p <hostport>:<containerport> <reponame>:<imagename> #create container from docker image with given port mapping
+docker exec -it <containername>	<command>	#execute command on the running container, example: bash to access the container
+
+
+docker stop <containername>					#gracefully stop the container
+docker kill <containername>					#forcefully kill the container
+docker start <containername>				#start a container
+
+
+
+
+
+
+-------------------------------------------------
+DockerFile START
+-------------------------------------------------
+
+FROM python:3						#specify base image
+
+RUN mkdir /code						#execute command "mkdir /code" in the image
+
+WORKDIR /code						#set working dir to "/code"
+
+COPY requirements.txt /code/		#copy requirements.txt file to "/code"
+
+RUN pip install -r requirements.txt	#execute command "pip install -r requirements.txt"
+
+COPY . /code/						#copy the django source code to the "/code" folder
+
+EXPOSE 8000							#expose port 8000 to public (deprecated?)
+
+CMD ["python", "nusFinTech/manage.py", "runserver", "0.0.0.0:8000"]		#define command to run on startup
+
+-------------------------------------------------
+DockerFile END
+-------------------------------------------------
+
+
+
