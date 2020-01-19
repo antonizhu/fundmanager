@@ -13,8 +13,8 @@ docker kill <containername>					#forcefully kill the container
 docker start <containername>				#start a container
 
 
-
-
+docker-compose up							#start build image and run a container
+docker-compose down							#stop container
 
 
 -------------------------------------------------
@@ -42,4 +42,20 @@ DockerFile END
 -------------------------------------------------
 
 
+!!! IMPORTANT note: At least in windows, Dockerfile is case sensitive, so make sure your file name is exactly Dockerfile!!!
+-------------------------------------------------
+docker-compose START
+-------------------------------------------------
+version: "3"				#docker compose version
+services: 					#services/images 
+    django:					#service/image name
+        build: .			#build location (where Dockerfile is located)
+        ports: 				#port mapping
+        - "8000:8000"		#from:to
+        volumes: 			#volume mapping to allow live update and display to the container
+        - .:/code			#from:to
 
+
+-------------------------------------------------
+docker-compose.yml END
+-------------------------------------------------
