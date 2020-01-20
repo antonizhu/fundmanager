@@ -8,5 +8,5 @@ RUN pip install -r requirements.txt
 COPY . /code/
 
 EXPOSE 8000
-RUN cd /code/nusFinTech/
-CMD ["python", "nusFinTech/manage.py", "runserver", "0.0.0.0:8000"]
+WORKDIR /code/nusFinTech/
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
