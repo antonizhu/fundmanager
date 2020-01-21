@@ -10,3 +10,16 @@ script:
 
 #after_success:
 #    - docker build -t antonizhu/dbsinvest .
+
+deploy:
+    provider: elasticbeanstalk
+    region: "ap-southeast-1"
+    app: "DBSInvest"
+    env: "Dbsinvest-env"
+    bucket_name: "elasticbeanstalk-ap-southeast-1-951654957037"
+    bucket_path: "DBSInvest"
+    on:
+        branch: master
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key:
+        secure: "$AWS_SECRET_KEY"

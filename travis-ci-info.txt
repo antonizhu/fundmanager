@@ -11,3 +11,28 @@ script:                                                     #commands to run onc
 #after_success:                                             #commands to run once "script" is done
 #    - docker build -t antonizhu/dbsinvest .                #docker build command executed
 
+deploy:                                                     #deploy action to be perform by travis
+    provider: elasticbeanstalk                              #provider travis is targeting (elasticbeanstalk)
+    region: "ap-southeast-1"                                #region of the (elasticbeanstalk). see AWS
+    app: "DBSInvest"
+    env: "Dbsinvest-env"
+    bucket_name: "elasticbeanstalk-ap-southeast-1-951654957037"
+    bucket_path: "DBSInvest"
+    on:
+        branch: master
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key:
+        secure: "$AWS_SECRET_KEY"
+
+#note for AWS:
+#1. Please create elasticbeanstalk application
+#   All Applications -> DBSInvest ->  Dbsinvest-env 
+#   (Environment ID: e-mjhhnskn4q, URL: Dbsinvest-env.hzhb6zak8w.ap-southeast-1.elasticbeanstalk.com)
+#                                       environment    env-id      region
+#2. Take note of the region name: ap-southeast-1
+#3. Take note of the application mame: DBSInvest
+#4. Take note of the environment name: Dbsinvest-env
+#5. bucket_name can be found by searching the S3 bucket name created during initialisatiton of beanstalk
+#6. bucket_path is the application name
+#7. create a new user account for travis to use: (IAM user, programmatic use, Full access to beanstalk)
+#8. take note on the access key and secret key generated.
