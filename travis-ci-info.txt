@@ -1,0 +1,13 @@
+sudo: required                                              #require admin account
+services:                                                   #list of services needed by travis
+    - docker                                                #docker tool is needed
+
+before_install:                                             #commands to execute as soon as travis start
+    - docker build -t antonizhu/dbsinvest .                 #docker build command executed
+
+script:                                                     #commands to run once "before_install" is done
+    - docker run antonizhu/dbsinvest python manage.py test  #docker run command executed
+
+#after_success:                                             #commands to run once "script" is done
+#    - docker build -t antonizhu/dbsinvest .                #docker build command executed
+
